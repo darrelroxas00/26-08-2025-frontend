@@ -183,7 +183,7 @@ const routes = [
         children: [
           { 
             path: '', // Default redirect to RSBSA_FORM when accessing /beneficiary/rsbsa/
-            element: <Navigate to="../RSBSA_FORM" replace /> 
+            element: <Navigate to="/beneficiary/RSBSA_FORM" replace /> 
           }
         ]
       },
