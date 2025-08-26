@@ -489,10 +489,19 @@ export const useRSBSAForm = () => {
 
       // Prepare application data for submission
       const applicationData = {
-        enrollment: formData.enrollment,
+        enrollment: {
+          ...formData.enrollment,
+          user_id: formData.enrollment.user_id || JSON.parse(localStorage.getItem('user') || '{}').id
+        },
         beneficiaryProfile: formData.beneficiaryProfile,
-        farmProfile: formData.farmProfile,
-        farmParcels: formData.farmParcels,
+        farmProfile: {
+          ...formData.farmProfile,
+          // beneficiary_id will be set by backend after beneficiary is created
+        },
+        farmParcels: formData.farmParcels.map(parcel => ({
+          ...parcel,
+          // farm_profile_id will be set by backend after farm profile is created
+        })),
         livelihoodDetails: formData.livelihoodDetails
       };
 

@@ -346,12 +346,21 @@ export const rsbsaService = {
   /**
    * Submit complete RSBSA application
    * This method handles the entire application submission process
+   * Expected backend flow:
+   * 1. Create/update beneficiary_details record
+   * 2. Create farm_profiles record with beneficiary_id
+   * 3. Create farm_parcels records with farm_profile_id  
+   * 4. Create rsbsa_enrollments record linking everything
+   * 5. Create livelihood category specific records
    */
   async submitCompleteApplication(applicationData) {
     try {
+      console.log('📤 Submitting complete RSBSA application:', applicationData);
       const response = await apiClient.post('/rsbsa-applications/complete', applicationData);
+      console.log('✅ Application submitted successfully:', response.data);
       return response.data;
     } catch (error) {
+      console.error('❌ Application submission failed:', error.response?.data || error.message);
       throw new Error(error.response?.data?.message || 'Failed to submit complete application');
     }
   },
