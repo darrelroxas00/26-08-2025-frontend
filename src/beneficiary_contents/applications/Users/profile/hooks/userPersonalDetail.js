@@ -426,6 +426,7 @@ const usePersonalDetails = (userId = null) => {
     savePersonalDetails,
     getCompletionPercentage,
     resetForm,
+    setErrors,
     // Explicit CRUD operations
     isCreate: !isExistingRecord,
     isUpdate: isExistingRecord,

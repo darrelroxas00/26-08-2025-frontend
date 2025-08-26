@@ -122,7 +122,8 @@ const PersonalDetails = () => {
     validateForm,
     savePersonalDetails,
     getCompletionPercentage,
-    loadPersonalDetails
+    loadPersonalDetails,
+    setErrors
   } = usePersonalDetails(userId);
 
   // Local state for editing mode
@@ -296,39 +297,37 @@ const PersonalDetails = () => {
               <AccordionDetails>
                 <Grid container spacing={3}>
                   <Grid item xs={12} md={6}>
-                    <LocalizationProvider dateAdapter={AdapterDateFns}>
-                      <DatePicker
-                        label="Birth Date *"
-                        value={formData.birth_date ? new Date(formData.birth_date) : null}
-                        onChange={(date) => {
-                          if (date) {
-                            // Validate that date is not in the future
-                            const today = new Date();
-                            if (date > today) {
-                              updateField('birth_date', '');
-                              // You can add error handling here if needed
-                              return;
-                            }
-                            // Format date as YYYY-MM-DD for backend
-                            const formattedDate = date.toISOString().split('T')[0];
-                            updateField('birth_date', formattedDate);
-                          } else {
+                    <DatePicker
+                      label="Birth Date *"
+                      value={formData.birth_date ? new Date(formData.birth_date) : null}
+                      onChange={(date) => {
+                        if (date) {
+                          // Validate that date is not in the future
+                          const today = new Date();
+                          if (date > today) {
                             updateField('birth_date', '');
+                            // You can add error handling here if needed
+                            return;
                           }
-                        }}
-                        disabled={!isEditing}
-                        slotProps={{
-                          textField: {
-                            fullWidth: true,
-                            error: !!errors.birth_date,
-                            helperText: errors.birth_date || 'Select your date of birth',
-                            variant: isEditing ? "outlined" : "filled",
-                            InputProps: { readOnly: !isEditing }
-                          }
-                        }}
-                        maxDate={new Date()} // Prevent future dates
-                      />
-                    </LocalizationProvider>
+                          // Format date as YYYY-MM-DD for backend
+                          const formattedDate = date.toISOString().split('T')[0];
+                          updateField('birth_date', formattedDate);
+                        } else {
+                          updateField('birth_date', '');
+                        }
+                      }}
+                      disabled={!isEditing}
+                      slotProps={{
+                        textField: {
+                          fullWidth: true,
+                          error: !!errors.birth_date,
+                          helperText: errors.birth_date || 'Select your date of birth',
+                          variant: isEditing ? "outlined" : "filled",
+                          InputProps: { readOnly: !isEditing }
+                        }
+                      }}
+                      maxDate={new Date()} // Prevent future dates
+                    />
                     
                     {/* Age Display */}
                     {formData.birth_date && (
