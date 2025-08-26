@@ -40,10 +40,7 @@ class BeneficiaryDetailsController extends Controller
     public function store(Request $request)
     {
         $validator = Validator::make($request->all(), [
-            'fname' => 'required|string|max:255',
-            'lname' => 'required|string|max:255',
-            'mname' => 'nullable|string|max:255',
-            'extension_name' => 'nullable|string|max:10',
+            // Name fields removed - they come from users table
             'barangay' => 'required|string|max:255',
             'municipality' => 'required|string|max:255',
             'province' => 'required|string|max:255',
@@ -125,9 +122,18 @@ class BeneficiaryDetailsController extends Controller
                 ], 404);
             }
 
+            // Add user name data to the response
+            $responseData = $beneficiaryDetail->toArray();
+            if ($beneficiaryDetail->user) {
+                $responseData['fname'] = $beneficiaryDetail->user->fname;
+                $responseData['mname'] = $beneficiaryDetail->user->mname;
+                $responseData['lname'] = $beneficiaryDetail->user->lname;
+                $responseData['extension_name'] = $beneficiaryDetail->user->extension_name;
+            }
+
             return response()->json([
                 'success' => true,
-                'data' => $beneficiaryDetail
+                'data' => $responseData
             ]);
 
         } catch (\Exception $e) {
@@ -156,9 +162,18 @@ class BeneficiaryDetailsController extends Controller
                 ], 404);
             }
 
+            // Add user name data to the response
+            $responseData = $beneficiaryDetail->toArray();
+            if ($beneficiaryDetail->user) {
+                $responseData['fname'] = $beneficiaryDetail->user->fname;
+                $responseData['mname'] = $beneficiaryDetail->user->mname;
+                $responseData['lname'] = $beneficiaryDetail->user->lname;
+                $responseData['extension_name'] = $beneficiaryDetail->user->extension_name;
+            }
+
             return response()->json([
                 'success' => true,
-                'data' => $beneficiaryDetail
+                'data' => $responseData
             ]);
 
         } catch (\Exception $e) {
@@ -176,10 +191,7 @@ class BeneficiaryDetailsController extends Controller
     public function update(Request $request, $userId)
     {
         $validator = Validator::make($request->all(), [
-            'fname' => 'sometimes|required|string|max:255',
-            'lname' => 'sometimes|required|string|max:255',
-            'mname' => 'nullable|string|max:255',
-            'extension_name' => 'nullable|string|max:10',
+            // Name fields removed - they come from users table
             'barangay' => 'sometimes|required|string|max:255',
             'municipality' => 'sometimes|required|string|max:255',
             'province' => 'sometimes|required|string|max:255',
