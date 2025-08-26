@@ -29,8 +29,14 @@ import {
   Warning as WarningIcon
 } from '@mui/icons-material';
 
+// Import database flow component
+import DatabaseFlowInfo from '../components/DatabaseFlowInfo';
+
 const ReviewSection = ({ formData, errors, onEdit }) => {
   const hasErrors = Object.keys(errors).length > 0;
+  
+  // Get user info for display
+  const currentUser = JSON.parse(localStorage.getItem('user') || '{}');
 
   const formatDate = (dateString) => {
     if (!dateString) return 'Not provided';
@@ -64,6 +70,9 @@ const ReviewSection = ({ formData, errors, onEdit }) => {
           </Typography>
         </Box>
       </Box>
+
+      {/* Database Flow Information */}
+      <DatabaseFlowInfo currentUser={currentUser} formData={formData} />
 
       {/* Validation Status */}
       {hasErrors ? (

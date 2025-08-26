@@ -90,6 +90,11 @@ export const rsbsaService = {
       const response = await apiClient.get(`/rsbsa-enrollments/user/${userId}`);
       return response.data;
     } catch (error) {
+      console.error('Error fetching user enrollment:', error);
+      // Return null if not found instead of throwing error
+      if (error.response?.status === 404) {
+        return null;
+      }
       throw new Error(error.response?.data?.message || 'Failed to fetch user enrollment');
     }
   },
@@ -149,6 +154,11 @@ export const rsbsaService = {
       const response = await apiClient.get(`/beneficiary-details/user/${userId}`);
       return response.data;
     } catch (error) {
+      console.error('Error fetching beneficiary details:', error);
+      // Return null if not found instead of throwing error
+      if (error.response?.status === 404) {
+        return null;
+      }
       throw new Error(error.response?.data?.message || 'Failed to fetch beneficiary details');
     }
   },
@@ -264,7 +274,20 @@ export const rsbsaService = {
       const response = await apiClient.get('/livelihood-categories');
       return response.data;
     } catch (error) {
-      throw new Error(error.response?.data?.message || 'Failed to fetch livelihood categories');
+      console.error('Error fetching livelihood categories:', error);
+      // Return fallback categories if API fails
+      return [
+        { id: 1, livelihood_category_name: 'Rice Farmer', created_at: new Date().toISOString(), updated_at: new Date().toISOString() },
+        { id: 2, livelihood_category_name: 'Corn Farmer', created_at: new Date().toISOString(), updated_at: new Date().toISOString() },
+        { id: 3, livelihood_category_name: 'Vegetable Farmer', created_at: new Date().toISOString(), updated_at: new Date().toISOString() },
+        { id: 4, livelihood_category_name: 'Fruit Farmer', created_at: new Date().toISOString(), updated_at: new Date().toISOString() },
+        { id: 5, livelihood_category_name: 'Livestock Raiser', created_at: new Date().toISOString(), updated_at: new Date().toISOString() },
+        { id: 6, livelihood_category_name: 'Poultry Raiser', created_at: new Date().toISOString(), updated_at: new Date().toISOString() },
+        { id: 7, livelihood_category_name: 'Fisherfolk', created_at: new Date().toISOString(), updated_at: new Date().toISOString() },
+        { id: 8, livelihood_category_name: 'Aquaculture', created_at: new Date().toISOString(), updated_at: new Date().toISOString() },
+        { id: 9, livelihood_category_name: 'Agricultural Worker/Farmworker', created_at: new Date().toISOString(), updated_at: new Date().toISOString() },
+        { id: 10, livelihood_category_name: 'Agri-Youth', created_at: new Date().toISOString(), updated_at: new Date().toISOString() },
+      ];
     }
   },
 
@@ -323,12 +346,21 @@ export const rsbsaService = {
   /**
    * Submit complete RSBSA application
    * This method handles the entire application submission process
+   * Expected backend flow:
+   * 1. Create/update beneficiary_details record
+   * 2. Create farm_profiles record with beneficiary_id
+   * 3. Create farm_parcels records with farm_profile_id  
+   * 4. Create rsbsa_enrollments record linking everything
+   * 5. Create livelihood category specific records
    */
   async submitCompleteApplication(applicationData) {
     try {
+      console.log('📤 Submitting complete RSBSA application:', applicationData);
       const response = await apiClient.post('/rsbsa-applications/complete', applicationData);
+      console.log('✅ Application submitted successfully:', response.data);
       return response.data;
     } catch (error) {
+      console.error('❌ Application submission failed:', error.response?.data || error.message);
       throw new Error(error.response?.data?.message || 'Failed to submit complete application');
     }
   },
@@ -374,6 +406,23 @@ export const rsbsaService = {
   },
 
   // ========================================
+  // TESTING AND UTILITY METHODS
+  // ========================================
+
+  /**
+   * Test API connection
+   */
+  async testConnection() {
+    try {
+      const response = await apiClient.get('/health');
+      return { success: true, data: response.data };
+    } catch (error) {
+      console.error('API connection test failed:', error);
+      return { success: false, error: error.message };
+    }
+  },
+
+  // ========================================
   // UTILITY METHODS
   // ========================================
 
@@ -401,6 +450,8 @@ export const rsbsaService = {
    */
   calculateCompletion(formData) {
     const requiredFields = [
+      'beneficiaryProfile.first_name',
+      'beneficiaryProfile.last_name',
       'beneficiaryProfile.barangay',
       'beneficiaryProfile.contact_number',
       'beneficiaryProfile.birth_date',
