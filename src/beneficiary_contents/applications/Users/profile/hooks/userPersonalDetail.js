@@ -170,6 +170,35 @@ const usePersonalDetails = (userId = null) => {
     if (!formData.birth_date) newErrors.birth_date = 'Birth date is required';
     if (!formData.sex) newErrors.sex = 'Sex is required';
 
+    // Enhanced birth date validation
+    if (formData.birth_date) {
+      const birthDate = new Date(formData.birth_date);
+      const today = new Date();
+      
+      // Check if date is valid
+      if (isNaN(birthDate.getTime())) {
+        newErrors.birth_date = 'Please enter a valid date';
+      }
+      // Check if date is in the future
+      else if (birthDate > today) {
+        newErrors.birth_date = 'Birth date cannot be in the future';
+      }
+      // Check if user is too young (under 18)
+      else {
+        const age = today.getFullYear() - birthDate.getFullYear();
+        const monthDiff = today.getMonth() - birthDate.getMonth();
+        if (monthDiff < 0 || (monthDiff === 0 && today.getDate() < birthDate.getDate())) {
+          age--;
+        }
+        
+        if (age < 18) {
+          newErrors.birth_date = 'You must be at least 18 years old to register';
+        } else if (age > 120) {
+          newErrors.birth_date = 'Please enter a valid birth date';
+        }
+      }
+    }
+
     // Contact number format validation
     if (formData.contact_number && !/^09\d{9}$/.test(formData.contact_number)) {
       newErrors.contact_number = 'Contact number must be in format 09XXXXXXXXX';

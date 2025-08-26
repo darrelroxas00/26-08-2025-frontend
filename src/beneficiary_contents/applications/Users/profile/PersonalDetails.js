@@ -26,7 +26,8 @@ import {
   Accordion,
   AccordionSummary,
   AccordionDetails,
-  Stack
+  Stack,
+  Container
 } from '@mui/material';
 import {
   Edit as EditIcon,
@@ -49,6 +50,29 @@ import { AdapterDateFns } from '@mui/x-date-pickers/AdapterDateFns';
 
 // Import the custom hook
 import usePersonalDetails from './hooks/userPersonalDetail';
+
+// Utility functions
+const calculateAge = (birthDate) => {
+  if (!birthDate) return null;
+  const today = new Date();
+  const birth = new Date(birthDate);
+  let age = today.getFullYear() - birth.getFullYear();
+  const monthDiff = today.getMonth() - birth.getMonth();
+  if (monthDiff < 0 || (monthDiff === 0 && today.getDate() < birth.getDate())) {
+    age--;
+  }
+  return age;
+};
+
+const formatDate = (dateString) => {
+  if (!dateString) return '';
+  const date = new Date(dateString);
+  return date.toLocaleDateString('en-US', {
+    year: 'numeric',
+    month: 'long',
+    day: 'numeric'
+  });
+};
 
 // Styled components
 const StyledCard = styled(Card)(({ theme }) => ({
@@ -98,38 +122,63 @@ const PersonalDetails = () => {
     validateForm,
     savePersonalDetails,
     getCompletionPercentage,
-    resetForm
+    loadPersonalDetails
   } = usePersonalDetails(userId);
 
+  // Local state for editing mode
   const [isEditing, setIsEditing] = useState(false);
-  const [saveSuccess, setSaveSuccess] = useState(false);
-  const [saveError, setSaveError] = useState('');
+
+  // Load data on component mount
+  useEffect(() => {
+    if (userId) {
+      loadPersonalDetails(userId);
+    }
+  }, [userId, loadPersonalDetails]);
+
+  // Handle edit mode toggle
+  const handleEdit = () => {
+    setIsEditing(true);
+  };
+
+  // Handle cancel edit
+  const handleCancel = () => {
+    setIsEditing(false);
+    // Reload data to reset any unsaved changes
+    if (userId) {
+      loadPersonalDetails(userId);
+    }
+  };
+
+  // Handle save changes
+  const handleSave = async () => {
+    if (!validateForm()) {
+      // Show error message
+      console.log('Form validation failed. Please fix the errors before saving.');
+      return;
+    }
+
+    try {
+      await savePersonalDetails();
+      setIsEditing(false);
+    } catch (error) {
+      console.error('Error saving personal details:', error);
+    }
+  };
+
+  // Real-time validation feedback
+  const getFieldError = (fieldName) => {
+    return errors[fieldName] || '';
+  };
+
+  const isFieldValid = (fieldName) => {
+    return !errors[fieldName];
+  };
 
   // Government ID types
   const govIdTypes = [
     'SSS ID', 'PhilHealth ID', 'TIN ID', 'Driver\'s License', 'Passport',
     'Postal ID', 'Voter\'s ID', 'Senior Citizen ID', 'PWD ID', 'UMID'
   ];
-
-  // Handle save
-  const handleSave = async () => {
-    const success = await savePersonalDetails();
-    if (success) {
-      setIsEditing(false);
-      setSaveSuccess(true);
-      setSaveError('');
-      setTimeout(() => setSaveSuccess(false), 3000);
-    } else {
-      setSaveError('Failed to save personal details. Please try again.');
-      setTimeout(() => setSaveError(''), 3000);
-    }
-  };
-
-  // Handle cancel
-  const handleCancel = () => {
-    setIsEditing(false);
-    // Optionally reload data or reset form
-  };
 
   // Get completion status color
   const getCompletionColor = (percentage) => {
@@ -153,579 +202,567 @@ const PersonalDetails = () => {
 
   return (
     <LocalizationProvider dateAdapter={AdapterDateFns}>
-      {/* Progress Section */}
-      <ProgressContainer>
-        <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 2 }}>
-          <Typography variant="h6" color="primary" fontWeight="bold">
-            Profile Completion
-          </Typography>
-          <Chip 
-            label={`${completionPercentage}% Complete`}
-            color={getCompletionColor(completionPercentage)}
-            variant="outlined"
-            sx={{ fontWeight: 'bold' }}
-          />
-        </Box>
-        <LinearProgress 
-          variant="determinate" 
-          value={completionPercentage} 
-          color={getCompletionColor(completionPercentage)}
+      <Container maxWidth="lg" sx={{ py: 4 }}>
+        {/* Header Section */}
+        <Paper 
+          elevation={0} 
           sx={{ 
-            height: 8, 
-            borderRadius: 4,
-            backgroundColor: 'rgba(0, 0, 0, 0.1)',
-            '& .MuiLinearProgress-bar': {
-              borderRadius: 4
-            }
-          }} 
-        />
-        <Typography variant="body2" color="text.secondary" sx={{ mt: 1 }}>
-          Complete your profile to access all features and services
-        </Typography>
-      </ProgressContainer>
+            p: 4, 
+            mb: 4, 
+            background: 'linear-gradient(135deg, #2E7D32 0%, #4CAF50 100%)',
+            color: 'white',
+            borderRadius: 2
+          }}
+        >
+          <Typography variant="h3" component="h1" gutterBottom fontWeight="bold">
+            Personal Details
+          </Typography>
+          <Typography variant="h6" sx={{ opacity: 0.9, mb: 2 }}>
+            Manage your personal information and profile details
+          </Typography>
+        </Paper>
 
-      {/* Success/Error Messages */}
-      {saveSuccess && (
-        <Alert severity="success" sx={{ mb: 3, borderRadius: 2 }}>
-          Personal details saved successfully!
-        </Alert>
-      )}
-      
-      {saveError && (
-        <Alert severity="error" sx={{ mb: 3, borderRadius: 2 }}>
-          {saveError}
-        </Alert>
-      )}
+        {/* Progress Container */}
+        <ProgressContainer>
+          <Grid container spacing={2} alignItems="center">
+            <Grid item xs={12} md={8}>
+              <Typography variant="h6" gutterBottom>
+                Profile Completion: {getCompletionPercentage()}%
+              </Typography>
+              <LinearProgress 
+                variant="determinate" 
+                value={getCompletionPercentage()} 
+                sx={{ height: 8, borderRadius: 4 }}
+              />
+              <Typography variant="body2" color="text.secondary" sx={{ mt: 1 }}>
+                Complete your profile to access all features
+              </Typography>
+            </Grid>
+            <Grid item xs={12} md={4} textAlign="right">
+              <Button
+                variant="outlined"
+                startIcon={<EditIcon />}
+                onClick={handleEdit}
+                disabled={isEditing || loading}
+                sx={{ borderRadius: 2 }}
+              >
+                Edit Profile
+              </Button>
+            </Grid>
+          </Grid>
+          
+          {/* Validation Errors Summary */}
+          {Object.keys(errors).length > 0 && (
+            <Alert 
+              severity="error" 
+              sx={{ mt: 2, borderRadius: 2 }}
+              action={
+                <Button 
+                  color="inherit" 
+                  size="small" 
+                  onClick={() => setErrors({})}
+                >
+                  Clear
+                </Button>
+              }
+            >
+              <Typography variant="body2" fontWeight="bold">
+                Please fix the following errors:
+              </Typography>
+              <Box component="ul" sx={{ mt: 1, mb: 0, pl: 2 }}>
+                {Object.entries(errors).map(([field, message]) => (
+                  <li key={field}>
+                    <Typography variant="body2">
+                      <strong>{field.replace('_', ' ').replace(/\b\w/g, l => l.toUpperCase())}:</strong> {message}
+                    </Typography>
+                  </li>
+                ))}
+              </Box>
+            </Alert>
+          )}
+        </ProgressContainer>
 
-      {/* Main Personal Details Card */}
-      <StyledCard>
-        <CardHeader
-          avatar={
-            <Avatar sx={{ bgcolor: 'primary.main' }}>
-              <PersonIcon />
-            </Avatar>
-          }
-          title={
-            <Typography variant="h5" fontWeight="bold">
-              Personal Details
-            </Typography>
-          }
-          subheader="Manage your personal information and profile details"
-          action={
-            <Box sx={{ display: 'flex', gap: 1 }}>
-              {!isEditing ? (
-                <Tooltip title="Edit Profile">
-                  <IconButton 
-                    color="primary" 
-                    onClick={() => setIsEditing(true)}
-                  >
-                    <EditIcon />
-                  </IconButton>
-                </Tooltip>
-              ) : (
-                <>
-                  <Tooltip title="Save Changes">
-                    <IconButton 
-                      color="primary" 
-                      onClick={handleSave}
-                      disabled={saving}
-                    >
-                      <SaveIcon />
-                    </IconButton>
-                  </Tooltip>
-                  <Tooltip title="Cancel">
-                    <IconButton 
-                      color="error" 
-                      onClick={handleCancel}
-                    >
-                      <CancelIcon />
-                    </IconButton>
-                  </Tooltip>
-                </>
-              )}
-            </Box>
-          }
-        />
-        
-        <CardContent>
-          {/* RSBSA Information Section */}
-          <Accordion defaultExpanded>
-            <AccordionSummary expandIcon={<ExpandMoreIcon />}>
-              <SectionHeader>
-                <BadgeIcon />
-                <Typography variant="h6" fontWeight="bold">RSBSA Information</Typography>
-              </SectionHeader>
-            </AccordionSummary>
-            <AccordionDetails>
-              <Grid container spacing={3}>
-                <Grid item xs={12} md={6}>
-                  <TextField
-                    fullWidth
-                    label="System Generated RSBSA Number"
-                    value={formData.system_generated_rsbsa_number || 'Not yet assigned'}
-                    disabled
-                    variant="filled"
-                    InputProps={{ readOnly: true }}
-                    helperText="This number is automatically generated by the system"
-                  />
-                </Grid>
-                <Grid item xs={12} md={6}>
-                  <TextField
-                    fullWidth
-                    label="Manual RSBSA Number"
-                    value={formData.manual_rsbsa_number || 'Not provided'}
-                    disabled
-                    variant="filled"
-                    InputProps={{ readOnly: true }}
-                    helperText="This number is assigned by DA office"
-                  />
-                </Grid>
-              </Grid>
-            </AccordionDetails>
-          </Accordion>
-
-          {/* Location Information Section */}
-          <Accordion defaultExpanded>
-            <AccordionSummary expandIcon={<ExpandMoreIcon />}>
-              <SectionHeader>
-                <HomeIcon />
-                <Typography variant="h6" fontWeight="bold">Location Information</Typography>
-              </SectionHeader>
-            </AccordionSummary>
-            <AccordionDetails>
-              <Grid container spacing={3}>
-                <Grid item xs={12} md={6}>
-                  <FormControl fullWidth error={!!errors.barangay}>
-                    <InputLabel>Barangay *</InputLabel>
-                    <Select
-                      value={formData.barangay}
-                      onChange={(e) => updateField('barangay', e.target.value)}
-                      disabled={!isEditing}
-                      variant={isEditing ? "outlined" : "filled"}
-                    >
-                      {barangayOptions.map((barangay) => (
-                        <MenuItem key={barangay} value={barangay}>
-                          {barangay}
-                        </MenuItem>
-                      ))}
-                    </Select>
-                    {errors.barangay && (
-                      <Typography variant="caption" color="error">
-                        {errors.barangay}
-                      </Typography>
-                    )}
-                  </FormControl>
-                </Grid>
-                <Grid item xs={12} md={6}>
-                  <TextField
-                    fullWidth
-                    label="Municipality"
-                    value={formData.municipality}
-                    disabled
-                    variant="filled"
-                  />
-                </Grid>
-                <Grid item xs={12} md={6}>
-                  <TextField
-                    fullWidth
-                    label="Province"
-                    value={formData.province}
-                    disabled
-                    variant="filled"
-                  />
-                </Grid>
-                <Grid item xs={12} md={6}>
-                  <TextField
-                    fullWidth
-                    label="Region"
-                    value={formData.region}
-                    disabled
-                    variant="filled"
-                  />
-                </Grid>
-              </Grid>
-            </AccordionDetails>
-          </Accordion>
-
-          {/* Contact Information Section */}
-          <Accordion defaultExpanded>
-            <AccordionSummary expandIcon={<ExpandMoreIcon />}>
-              <SectionHeader>
-                <PhoneIcon />
-                <Typography variant="h6" fontWeight="bold">Contact Information</Typography>
-              </SectionHeader>
-            </AccordionSummary>
-            <AccordionDetails>
-              <Grid container spacing={3}>
-                <Grid item xs={12} md={6}>
-                  <TextField
-                    fullWidth
-                    label="Contact Number *"
-                    value={formData.contact_number}
-                    onChange={(e) => updateField('contact_number', e.target.value)}
-                    disabled={!isEditing}
-                    variant={isEditing ? "outlined" : "filled"}
-                    InputProps={{ readOnly: !isEditing }}
-                    error={!!errors.contact_number}
-                    helperText={errors.contact_number || "Format: 09XXXXXXXXX"}
-                  />
-                </Grid>
-                <Grid item xs={12} md={6}>
-                  <TextField
-                    fullWidth
-                    label="Emergency Contact Number"
-                    value={formData.emergency_contact_number}
-                    onChange={(e) => updateField('emergency_contact_number', e.target.value)}
-                    disabled={!isEditing}
-                    variant={isEditing ? "outlined" : "filled"}
-                    InputProps={{ readOnly: !isEditing }}
-                    error={!!errors.emergency_contact_number}
-                    helperText={errors.emergency_contact_number || "Format: 09XXXXXXXXX"}
-                  />
-                </Grid>
-              </Grid>
-            </AccordionDetails>
-          </Accordion>
-
-          {/* Personal Information Section */}
-          <Accordion defaultExpanded>
-            <AccordionSummary expandIcon={<ExpandMoreIcon />}>
-              <SectionHeader>
-                <PersonIcon />
-                <Typography variant="h6" fontWeight="bold">Personal Information</Typography>
-              </SectionHeader>
-            </AccordionSummary>
-            <AccordionDetails>
-              <Grid container spacing={3}>
-                <Grid item xs={12} md={6}>
-                  <DatePicker
-                    label="Birth Date *"
-                    value={formData.birth_date ? new Date(formData.birth_date) : null}
-                    onChange={(date) => updateField('birth_date', date?.toISOString().split('T')[0])}
-                    disabled={!isEditing}
-                    renderInput={(params) => (
-                      <TextField
-                        {...params}
-                        fullWidth
-                        error={!!errors.birth_date}
-                        helperText={errors.birth_date}
-                        variant={isEditing ? "outlined" : "filled"}
+        {/* Main Personal Details Card */}
+        <StyledCard>
+          <CardContent sx={{ p: 4 }}>
+            {/* Personal Information Section */}
+            <Accordion defaultExpanded>
+              <AccordionSummary expandIcon={<ExpandMoreIcon />}>
+                <SectionHeader>
+                  <PersonIcon />
+                  <Typography variant="h6" fontWeight="bold">Personal Information</Typography>
+                </SectionHeader>
+              </AccordionSummary>
+              <AccordionDetails>
+                <Grid container spacing={3}>
+                  <Grid item xs={12} md={6}>
+                    <LocalizationProvider dateAdapter={AdapterDateFns}>
+                      <DatePicker
+                        label="Birth Date *"
+                        value={formData.birth_date ? new Date(formData.birth_date) : null}
+                        onChange={(date) => {
+                          if (date) {
+                            // Validate that date is not in the future
+                            const today = new Date();
+                            if (date > today) {
+                              updateField('birth_date', '');
+                              // You can add error handling here if needed
+                              return;
+                            }
+                            // Format date as YYYY-MM-DD for backend
+                            const formattedDate = date.toISOString().split('T')[0];
+                            updateField('birth_date', formattedDate);
+                          } else {
+                            updateField('birth_date', '');
+                          }
+                        }}
+                        disabled={!isEditing}
+                        slotProps={{
+                          textField: {
+                            fullWidth: true,
+                            error: !!errors.birth_date,
+                            helperText: errors.birth_date || 'Select your date of birth',
+                            variant: isEditing ? "outlined" : "filled",
+                            InputProps: { readOnly: !isEditing }
+                          }
+                        }}
+                        maxDate={new Date()} // Prevent future dates
                       />
+                    </LocalizationProvider>
+                    
+                    {/* Age Display */}
+                    {formData.birth_date && (
+                      <Box sx={{ mt: 1, display: 'flex', alignItems: 'center', gap: 1 }}>
+                        <Chip 
+                          label={`Age: ${calculateAge(formData.birth_date)} years old`}
+                          color="primary"
+                          variant="outlined"
+                          size="small"
+                        />
+                        <Typography variant="caption" color="text.secondary">
+                          Born: {formatDate(formData.birth_date)}
+                        </Typography>
+                      </Box>
                     )}
-                  />
-                </Grid>
-                <Grid item xs={12} md={6}>
-                  <TextField
-                    fullWidth
-                    label="Place of Birth"
-                    value={formData.place_of_birth}
-                    onChange={(e) => updateField('place_of_birth', e.target.value)}
-                    disabled={!isEditing}
-                    variant={isEditing ? "outlined" : "filled"}
-                    InputProps={{ readOnly: !isEditing }}
-                  />
-                </Grid>
-                <Grid item xs={12} md={6}>
-                  <FormControl fullWidth error={!!errors.sex}>
-                    <InputLabel>Sex *</InputLabel>
-                    <Select
-                      value={formData.sex}
-                      onChange={(e) => updateField('sex', e.target.value)}
-                      disabled={!isEditing}
-                      variant={isEditing ? "outlined" : "filled"}
-                    >
-                      <MenuItem value="Male">Male</MenuItem>
-                      <MenuItem value="Female">Female</MenuItem>
-                    </Select>
-                    {errors.sex && (
-                      <Typography variant="caption" color="error">
-                        {errors.sex}
-                      </Typography>
-                    )}
-                  </FormControl>
-                </Grid>
-                <Grid item xs={12} md={6}>
-                  <FormControl fullWidth>
-                    <InputLabel>Civil Status</InputLabel>
-                    <Select
-                      value={formData.civil_status}
-                      onChange={(e) => updateField('civil_status', e.target.value)}
-                      disabled={!isEditing}
-                      variant={isEditing ? "outlined" : "filled"}
-                    >
-                      {civilStatusOptions.map((option) => (
-                        <MenuItem key={option.value} value={option.value}>
-                          {option.label}
-                        </MenuItem>
-                      ))}
-                    </Select>
-                  </FormControl>
-                </Grid>
-                {formData.civil_status === 'married' && (
+                  </Grid>
                   <Grid item xs={12} md={6}>
                     <TextField
                       fullWidth
-                      label="Name of Spouse *"
-                      value={formData.name_of_spouse}
-                      onChange={(e) => updateField('name_of_spouse', e.target.value)}
+                      label="Place of Birth"
+                      value={formData.place_of_birth}
+                      onChange={(e) => updateField('place_of_birth', e.target.value)}
                       disabled={!isEditing}
                       variant={isEditing ? "outlined" : "filled"}
                       InputProps={{ readOnly: !isEditing }}
-                      error={!!errors.name_of_spouse}
-                      helperText={errors.name_of_spouse}
                     />
                   </Grid>
-                )}
-                <Grid item xs={12} md={6}>
-                  <TextField
-                    fullWidth
-                    label="Mother's Maiden Name"
-                    value={formData.mothers_maiden_name}
-                    onChange={(e) => updateField('mothers_maiden_name', e.target.value)}
-                    disabled={!isEditing}
-                    variant={isEditing ? "outlined" : "filled"}
-                    InputProps={{ readOnly: !isEditing }}
-                  />
-                </Grid>
-              </Grid>
-            </AccordionDetails>
-          </Accordion>
-
-          {/* Educational & Demographic Information Section */}
-          <Accordion>
-            <AccordionSummary expandIcon={<ExpandMoreIcon />}>
-              <SectionHeader>
-                <SchoolIcon />
-                <Typography variant="h6" fontWeight="bold">Educational & Demographic Information</Typography>
-              </SectionHeader>
-            </AccordionSummary>
-            <AccordionDetails>
-              <Grid container spacing={3}>
-                <Grid item xs={12} md={6}>
-                  <FormControl fullWidth>
-                    <InputLabel>Highest Education</InputLabel>
-                    <Select
-                      value={formData.highest_education}
-                      onChange={(e) => updateField('highest_education', e.target.value)}
-                      disabled={!isEditing}
-                      variant={isEditing ? "outlined" : "filled"}
-                    >
-                      {educationOptions.map((option) => (
-                        <MenuItem key={option.value} value={option.value}>
-                          {option.label}
-                        </MenuItem>
-                      ))}
-                    </Select>
-                  </FormControl>
-                </Grid>
-                <Grid item xs={12} md={6}>
-                  <TextField
-                    fullWidth
-                    label="Religion"
-                    value={formData.religion}
-                    onChange={(e) => updateField('religion', e.target.value)}
-                    disabled={!isEditing}
-                    variant={isEditing ? "outlined" : "filled"}
-                    InputProps={{ readOnly: !isEditing }}
-                  />
-                </Grid>
-                <Grid item xs={12}>
-                  <FormControlLabel
-                    control={
-                      <Switch
-                        checked={formData.is_pwd}
-                        onChange={(e) => updateField('is_pwd', e.target.checked)}
+                  <Grid item xs={12} md={6}>
+                    <FormControl fullWidth error={!!errors.sex}>
+                      <InputLabel>Sex *</InputLabel>
+                      <Select
+                        value={formData.sex}
+                        onChange={(e) => updateField('sex', e.target.value)}
                         disabled={!isEditing}
-                      />
-                    }
-                    label="Person with Disability (PWD)"
-                  />
-                </Grid>
-              </Grid>
-            </AccordionDetails>
-          </Accordion>
-
-          {/* Government ID Information Section */}
-          <Accordion>
-            <AccordionSummary expandIcon={<ExpandMoreIcon />}>
-              <SectionHeader>
-                <BadgeIcon />
-                <Typography variant="h6" fontWeight="bold">Government ID Information</Typography>
-              </SectionHeader>
-            </AccordionSummary>
-            <AccordionDetails>
-              <Grid container spacing={3}>
-                <Grid item xs={12} md={6}>
-                  <FormControl fullWidth>
-                    <InputLabel>Has Government ID</InputLabel>
-                    <Select
-                      value={formData.has_government_id}
-                      onChange={(e) => updateField('has_government_id', e.target.value)}
-                      disabled={!isEditing}
-                      variant={isEditing ? "outlined" : "filled"}
-                    >
-                      {yesNoOptions.map((option) => (
-                        <MenuItem key={option.value} value={option.value}>
-                          {option.label}
-                        </MenuItem>
-                      ))}
-                    </Select>
-                  </FormControl>
-                </Grid>
-                {formData.has_government_id === 'yes' && (
-                  <>
-                    <Grid item xs={12} md={6}>
-                      <FormControl fullWidth error={!!errors.gov_id_type}>
-                        <InputLabel>Government ID Type *</InputLabel>
-                        <Select
-                          value={formData.gov_id_type}
-                          onChange={(e) => updateField('gov_id_type', e.target.value)}
-                          disabled={!isEditing}
-                          variant={isEditing ? "outlined" : "filled"}
-                        >
-                          {govIdTypes.map((type) => (
-                            <MenuItem key={type} value={type}>
-                              {type}
-                            </MenuItem>
-                          ))}
-                        </Select>
-                        {errors.gov_id_type && (
-                          <Typography variant="caption" color="error">
-                            {errors.gov_id_type}
-                          </Typography>
-                        )}
-                      </FormControl>
-                    </Grid>
+                        variant={isEditing ? "outlined" : "filled"}
+                      >
+                        <MenuItem value="Male">Male</MenuItem>
+                        <MenuItem value="Female">Female</MenuItem>
+                      </Select>
+                      {errors.sex && (
+                        <Typography variant="caption" color="error">
+                          {errors.sex}
+                        </Typography>
+                      )}
+                    </FormControl>
+                  </Grid>
+                  <Grid item xs={12} md={6}>
+                    <FormControl fullWidth>
+                      <InputLabel>Civil Status</InputLabel>
+                      <Select
+                        value={formData.civil_status}
+                        onChange={(e) => updateField('civil_status', e.target.value)}
+                        disabled={!isEditing}
+                        variant={isEditing ? "outlined" : "filled"}
+                      >
+                        {civilStatusOptions.map((option) => (
+                          <MenuItem key={option.value} value={option.value}>
+                            {option.label}
+                          </MenuItem>
+                        ))}
+                      </Select>
+                    </FormControl>
+                  </Grid>
+                  {formData.civil_status === 'married' && (
                     <Grid item xs={12} md={6}>
                       <TextField
                         fullWidth
-                        label="Government ID Number *"
-                        value={formData.gov_id_number}
-                        onChange={(e) => updateField('gov_id_number', e.target.value)}
+                        label="Name of Spouse *"
+                        value={formData.name_of_spouse}
+                        onChange={(e) => updateField('name_of_spouse', e.target.value)}
                         disabled={!isEditing}
                         variant={isEditing ? "outlined" : "filled"}
                         InputProps={{ readOnly: !isEditing }}
-                        error={!!errors.gov_id_number}
-                        helperText={errors.gov_id_number}
+                        error={!!errors.name_of_spouse}
+                        helperText={errors.name_of_spouse}
                       />
                     </Grid>
-                  </>
-                )}
-              </Grid>
-            </AccordionDetails>
-          </Accordion>
-
-          {/* Association & Organization Membership Section */}
-          <Accordion>
-            <AccordionSummary expandIcon={<ExpandMoreIcon />}>
-              <SectionHeader>
-                <GroupIcon />
-                <Typography variant="h6" fontWeight="bold">Association & Organization Membership</Typography>
-              </SectionHeader>
-            </AccordionSummary>
-            <AccordionDetails>
-              <Grid container spacing={3}>
-                <Grid item xs={12} md={6}>
-                  <FormControl fullWidth>
-                    <InputLabel>Association Member</InputLabel>
-                    <Select
-                      value={formData.is_association_member}
-                      onChange={(e) => updateField('is_association_member', e.target.value)}
-                      disabled={!isEditing}
-                      variant={isEditing ? "outlined" : "filled"}
-                    >
-                      {yesNoOptions.map((option) => (
-                        <MenuItem key={option.value} value={option.value}>
-                          {option.label}
-                        </MenuItem>
-                      ))}
-                    </Select>
-                  </FormControl>
-                </Grid>
-                {formData.is_association_member === 'yes' && (
+                  )}
                   <Grid item xs={12} md={6}>
                     <TextField
                       fullWidth
-                      label="Association Name *"
-                      value={formData.association_name}
-                      onChange={(e) => updateField('association_name', e.target.value)}
+                      label="Mother's Maiden Name"
+                      value={formData.mothers_maiden_name}
+                      onChange={(e) => updateField('mothers_maiden_name', e.target.value)}
                       disabled={!isEditing}
                       variant={isEditing ? "outlined" : "filled"}
                       InputProps={{ readOnly: !isEditing }}
-                      error={!!errors.association_name}
-                      helperText={errors.association_name}
                     />
                   </Grid>
-                )}
-              </Grid>
-            </AccordionDetails>
-          </Accordion>
+                </Grid>
+              </AccordionDetails>
+            </Accordion>
 
-          {/* Household Information Section */}
-          <Accordion>
-            <AccordionSummary expandIcon={<ExpandMoreIcon />}>
-              <SectionHeader>
-                <HomeIcon />
-                <Typography variant="h6" fontWeight="bold">Household Information</Typography>
-              </SectionHeader>
-            </AccordionSummary>
-            <AccordionDetails>
-              <Grid container spacing={3}>
-                <Grid item xs={12}>
-                  <FormControlLabel
-                    control={
-                      <Switch
-                        checked={formData.is_household_head}
-                        onChange={(e) => updateField('is_household_head', e.target.checked)}
+            {/* Educational & Demographic Information Section */}
+            <Accordion>
+              <AccordionSummary expandIcon={<ExpandMoreIcon />}>
+                <SectionHeader>
+                  <SchoolIcon />
+                  <Typography variant="h6" fontWeight="bold">Educational & Demographic Information</Typography>
+                </SectionHeader>
+              </AccordionSummary>
+              <AccordionDetails>
+                <Grid container spacing={3}>
+                  <Grid item xs={12} md={6}>
+                    <FormControl fullWidth>
+                      <InputLabel>Highest Education</InputLabel>
+                      <Select
+                        value={formData.highest_education}
+                        onChange={(e) => updateField('highest_education', e.target.value)}
                         disabled={!isEditing}
-                      />
-                    }
-                    label="I am the household head"
-                  />
-                </Grid>
-                {!formData.is_household_head && (
+                        variant={isEditing ? "outlined" : "filled"}
+                      >
+                        {educationOptions.map((option) => (
+                          <MenuItem key={option.value} value={option.value}>
+                            {option.label}
+                          </MenuItem>
+                        ))}
+                      </Select>
+                    </FormControl>
+                  </Grid>
                   <Grid item xs={12} md={6}>
                     <TextField
                       fullWidth
-                      label="Household Head Name *"
-                      value={formData.household_head_name}
-                      onChange={(e) => updateField('household_head_name', e.target.value)}
+                      label="Religion"
+                      value={formData.religion}
+                      onChange={(e) => updateField('religion', e.target.value)}
                       disabled={!isEditing}
                       variant={isEditing ? "outlined" : "filled"}
                       InputProps={{ readOnly: !isEditing }}
-                      error={!!errors.household_head_name}
-                      helperText={errors.household_head_name}
                     />
                   </Grid>
-                )}
-              </Grid>
-            </AccordionDetails>
-          </Accordion>
+                  <Grid item xs={12}>
+                    <FormControlLabel
+                      control={
+                        <Switch
+                          checked={formData.is_pwd}
+                          onChange={(e) => updateField('is_pwd', e.target.checked)}
+                          disabled={!isEditing}
+                        />
+                      }
+                      label="Person with Disability (PWD)"
+                    />
+                  </Grid>
+                </Grid>
+              </AccordionDetails>
+            </Accordion>
 
-          {/* Action Buttons */}
-          {isEditing && (
-            <Box sx={{ mt: 4, display: 'flex', gap: 2, justifyContent: 'flex-end' }}>
-              <Button
-                variant="outlined"
-                color="error"
-                onClick={handleCancel}
-                disabled={saving}
-              >
-                Cancel
-              </Button>
-              <Button
-                variant="contained"
-                color="primary"
-                onClick={handleSave}
-                disabled={saving}
-                startIcon={<SaveIcon />}
-              >
-                {saving ? 'Saving...' : 'Save Changes'}
-              </Button>
-            </Box>
-          )}
-        </CardContent>
-      </StyledCard>
+            {/* Government ID Information Section */}
+            <Accordion>
+              <AccordionSummary expandIcon={<ExpandMoreIcon />}>
+                <SectionHeader>
+                  <BadgeIcon />
+                  <Typography variant="h6" fontWeight="bold">Government ID Information</Typography>
+                </SectionHeader>
+              </AccordionSummary>
+              <AccordionDetails>
+                <Grid container spacing={3}>
+                  <Grid item xs={12} md={6}>
+                    <FormControl fullWidth>
+                      <InputLabel>Has Government ID</InputLabel>
+                      <Select
+                        value={formData.has_government_id}
+                        onChange={(e) => updateField('has_government_id', e.target.value)}
+                        disabled={!isEditing}
+                        variant={isEditing ? "outlined" : "filled"}
+                      >
+                        {yesNoOptions.map((option) => (
+                          <MenuItem key={option.value} value={option.value}>
+                            {option.label}
+                          </MenuItem>
+                        ))}
+                      </Select>
+                    </FormControl>
+                  </Grid>
+                  {formData.has_government_id === 'yes' && (
+                    <>
+                      <Grid item xs={12} md={6}>
+                        <FormControl fullWidth error={!!errors.gov_id_type}>
+                          <InputLabel>Government ID Type *</InputLabel>
+                          <Select
+                            value={formData.gov_id_type}
+                            onChange={(e) => updateField('gov_id_type', e.target.value)}
+                            disabled={!isEditing}
+                            variant={isEditing ? "outlined" : "filled"}
+                          >
+                            {govIdTypes.map((type) => (
+                              <MenuItem key={type} value={type}>
+                                {type}
+                              </MenuItem>
+                            ))}
+                          </Select>
+                          {errors.gov_id_type && (
+                            <Typography variant="caption" color="error">
+                              {errors.gov_id_type}
+                            </Typography>
+                          )}
+                        </FormControl>
+                      </Grid>
+                      <Grid item xs={12} md={6}>
+                        <TextField
+                          fullWidth
+                          label="Government ID Number *"
+                          value={formData.gov_id_number}
+                          onChange={(e) => updateField('gov_id_number', e.target.value)}
+                          disabled={!isEditing}
+                          variant={isEditing ? "outlined" : "filled"}
+                          InputProps={{ readOnly: !isEditing }}
+                          error={!!errors.gov_id_number}
+                          helperText={errors.gov_id_number}
+                        />
+                      </Grid>
+                    </>
+                  )}
+                </Grid>
+              </AccordionDetails>
+            </Accordion>
+
+            {/* Association & Organization Membership Section */}
+            <Accordion>
+              <AccordionSummary expandIcon={<ExpandMoreIcon />}>
+                <SectionHeader>
+                  <GroupIcon />
+                  <Typography variant="h6" fontWeight="bold">Association & Organization Membership</Typography>
+                </SectionHeader>
+              </AccordionSummary>
+              <AccordionDetails>
+                <Grid container spacing={3}>
+                  <Grid item xs={12} md={6}>
+                    <FormControl fullWidth>
+                      <InputLabel>Association Member</InputLabel>
+                      <Select
+                        value={formData.is_association_member}
+                        onChange={(e) => updateField('is_association_member', e.target.value)}
+                        disabled={!isEditing}
+                        variant={isEditing ? "outlined" : "filled"}
+                      >
+                        {yesNoOptions.map((option) => (
+                          <MenuItem key={option.value} value={option.value}>
+                            {option.label}
+                          </MenuItem>
+                        ))}
+                      </Select>
+                    </FormControl>
+                  </Grid>
+                  {formData.is_association_member === 'yes' && (
+                    <Grid item xs={12} md={6}>
+                      <TextField
+                        fullWidth
+                        label="Association Name *"
+                        value={formData.association_name}
+                        onChange={(e) => updateField('association_name', e.target.value)}
+                        disabled={!isEditing}
+                        variant={isEditing ? "outlined" : "filled"}
+                        InputProps={{ readOnly: !isEditing }}
+                        error={!!errors.association_name}
+                        helperText={errors.association_name}
+                      />
+                    </Grid>
+                  )}
+                </Grid>
+              </AccordionDetails>
+            </Accordion>
+
+            {/* Household Information Section */}
+            <Accordion>
+              <AccordionSummary expandIcon={<ExpandMoreIcon />}>
+                <SectionHeader>
+                  <HomeIcon />
+                  <Typography variant="h6" fontWeight="bold">Household Information</Typography>
+                </SectionHeader>
+              </AccordionSummary>
+              <AccordionDetails>
+                <Grid container spacing={3}>
+                  <Grid item xs={12}>
+                    <FormControlLabel
+                      control={
+                        <Switch
+                          checked={formData.is_household_head}
+                          onChange={(e) => updateField('is_household_head', e.target.checked)}
+                          disabled={!isEditing}
+                        />
+                      }
+                      label="I am the household head"
+                    />
+                  </Grid>
+                  {!formData.is_household_head && (
+                    <Grid item xs={12} md={6}>
+                      <TextField
+                        fullWidth
+                        label="Household Head Name *"
+                        value={formData.household_head_name}
+                        onChange={(e) => updateField('household_head_name', e.target.value)}
+                        disabled={!isEditing}
+                        variant={isEditing ? "outlined" : "filled"}
+                        InputProps={{ readOnly: !isEditing }}
+                        error={!!errors.household_head_name}
+                        helperText={errors.household_head_name}
+                      />
+                    </Grid>
+                  )}
+                </Grid>
+              </AccordionDetails>
+            </Accordion>
+
+            {/* Location Information Section */}
+            <Accordion>
+              <AccordionSummary expandIcon={<ExpandMoreIcon />}>
+                <SectionHeader>
+                  <HomeIcon />
+                  <Typography variant="h6" fontWeight="bold">Location Information</Typography>
+                </SectionHeader>
+              </AccordionSummary>
+              <AccordionDetails>
+                <Grid container spacing={3}>
+                  <Grid item xs={12} md={6}>
+                    <FormControl fullWidth error={!!errors.barangay}>
+                      <InputLabel>Barangay *</InputLabel>
+                      <Select
+                        value={formData.barangay}
+                        onChange={(e) => updateField('barangay', e.target.value)}
+                        disabled={!isEditing}
+                        variant={isEditing ? "outlined" : "filled"}
+                      >
+                        {barangayOptions.map((barangay) => (
+                          <MenuItem key={barangay} value={barangay}>
+                            {barangay}
+                          </MenuItem>
+                        ))}
+                      </Select>
+                      {errors.barangay && (
+                        <Typography variant="caption" color="error">
+                          {errors.barangay}
+                        </Typography>
+                      )}
+                    </FormControl>
+                  </Grid>
+                  <Grid item xs={12} md={6}>
+                    <TextField
+                      fullWidth
+                      label="Municipality"
+                      value={formData.municipality}
+                      disabled
+                      variant="filled"
+                    />
+                  </Grid>
+                  <Grid item xs={12} md={6}>
+                    <TextField
+                      fullWidth
+                      label="Province"
+                      value={formData.province}
+                      disabled
+                      variant="filled"
+                    />
+                  </Grid>
+                  <Grid item xs={12} md={6}>
+                    <TextField
+                      fullWidth
+                      label="Region"
+                      value={formData.region}
+                      disabled
+                      variant="filled"
+                    />
+                  </Grid>
+                </Grid>
+              </AccordionDetails>
+            </Accordion>
+
+            {/* Contact Information Section */}
+            <Accordion>
+              <AccordionSummary expandIcon={<ExpandMoreIcon />}>
+                <SectionHeader>
+                  <PhoneIcon />
+                  <Typography variant="h6" fontWeight="bold">Contact Information</Typography>
+                </SectionHeader>
+              </AccordionSummary>
+              <AccordionDetails>
+                <Grid container spacing={3}>
+                  <Grid item xs={12} md={6}>
+                    <TextField
+                      fullWidth
+                      label="Contact Number *"
+                      value={formData.contact_number}
+                      onChange={(e) => updateField('contact_number', e.target.value)}
+                      disabled={!isEditing}
+                      variant={isEditing ? "outlined" : "filled"}
+                      InputProps={{ readOnly: !isEditing }}
+                      error={!!errors.contact_number}
+                      helperText={errors.contact_number || "Format: 09XXXXXXXXX"}
+                      placeholder="09XXXXXXXXX"
+                    />
+                  </Grid>
+                  <Grid item xs={12} md={6}>
+                    <TextField
+                      fullWidth
+                      label="Emergency Contact Number"
+                      value={formData.emergency_contact_number}
+                      onChange={(e) => updateField('emergency_contact_number', e.target.value)}
+                      disabled={!isEditing}
+                      variant={isEditing ? "outlined" : "filled"}
+                      InputProps={{ readOnly: !isEditing }}
+                      error={!!errors.emergency_contact_number}
+                      helperText={errors.emergency_contact_number || "Format: 09XXXXXXXXX (Optional)"}
+                      placeholder="09XXXXXXXXX"
+                    />
+                  </Grid>
+                </Grid>
+              </AccordionDetails>
+            </Accordion>
+
+            {/* Action Buttons */}
+            {isEditing && (
+              <Box sx={{ mt: 4, display: 'flex', gap: 2, justifyContent: 'flex-end' }}>
+                <Button
+                  variant="outlined"
+                  color="error"
+                  onClick={handleCancel}
+                  disabled={saving}
+                >
+                  Cancel
+                </Button>
+                <Button
+                  variant="contained"
+                  color="primary"
+                  onClick={handleSave}
+                  disabled={saving}
+                  startIcon={<SaveIcon />}
+                >
+                  {saving ? 'Saving...' : 'Save Changes'}
+                </Button>
+              </Box>
+            )}
+          </CardContent>
+        </StyledCard>
+      </Container>
     </LocalizationProvider>
   );
 };
