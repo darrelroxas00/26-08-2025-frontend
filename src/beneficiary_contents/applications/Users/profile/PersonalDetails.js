@@ -1,3 +1,4 @@
+/* eslint-disable no-restricted-globals */
 /* eslint-disable no-unused-vars */
 import React, { useState, useEffect } from 'react';
 import {
@@ -49,6 +50,55 @@ import { AdapterDateFns } from '@mui/x-date-pickers/AdapterDateFns';
 
 // Import the custom hook
 import usePersonalDetails from './hooks/userPersonalDetail';
+
+// Utility functions
+const calculateAge = (birthDate) => {
+  try {
+    if (!birthDate) return null;
+    
+    const today = new Date();
+    const birth = new Date(birthDate);
+    
+    // Validate dates
+    if (isNaN(birth.getTime()) || isNaN(today.getTime())) {
+      return null;
+    }
+    
+    let age = today.getFullYear() - birth.getFullYear();
+    const monthDiff = today.getMonth() - birth.getMonth();
+    
+    if (monthDiff < 0 || (monthDiff === 0 && today.getDate() < birth.getDate())) {
+      age--;
+    }
+    
+    return age > 0 ? age : null;
+  } catch (error) {
+    console.error('Age calculation error:', error);
+    return null;
+  }
+};
+
+const formatDate = (dateString) => {
+  try {
+    if (!dateString) return '';
+    
+    const date = new Date(dateString);
+    
+    // Validate date
+    if (isNaN(date.getTime())) {
+      return '';
+    }
+    
+    return date.toLocaleDateString('en-US', {
+      year: 'numeric',
+      month: 'long',
+      day: 'numeric'
+    });
+  } catch (error) {
+    console.error('Date formatting error:', error);
+    return '';
+  }
+};
 
 // Styled components
 const StyledCard = styled(Card)(({ theme }) => ({
@@ -403,6 +453,7 @@ const PersonalDetails = () => {
                     value={formData.birth_date ? new Date(formData.birth_date) : null}
                     onChange={(date) => updateField('birth_date', date?.toISOString().split('T')[0])}
                     disabled={!isEditing}
+                    maxDate={new Date()}
                     renderInput={(params) => (
                       <TextField
                         {...params}
@@ -413,6 +464,21 @@ const PersonalDetails = () => {
                       />
                     )}
                   />
+                  
+                  {/* Age Display */}
+                  {formData.birth_date && (
+                    <Box sx={{ mt: 1, display: 'flex', alignItems: 'center', gap: 1 }}>
+                      <Chip 
+                        label={`Age: ${calculateAge(formData.birth_date)} years old`}
+                        color="primary"
+                        variant="outlined"
+                        size="small"
+                      />
+                      <Typography variant="caption" color="text.secondary">
+                        Born: {formatDate(formData.birth_date)}
+                      </Typography>
+                    </Box>
+                  )}
                 </Grid>
                 <Grid item xs={12} md={6}>
                   <TextField
