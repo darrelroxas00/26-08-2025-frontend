@@ -306,7 +306,6 @@ const PersonalDetails = () => {
                           const today = new Date();
                           if (date > today) {
                             updateField('birth_date', '');
-                            // You can add error handling here if needed
                             return;
                           }
                           // Format date as YYYY-MM-DD for backend
@@ -327,7 +326,7 @@ const PersonalDetails = () => {
                           InputProps={{ readOnly: !isEditing }}
                         />
                       )}
-                      maxDate={new Date()} // Prevent future dates
+                      maxDate={new Date()}
                     />
                     
                     {/* Age Display */}
