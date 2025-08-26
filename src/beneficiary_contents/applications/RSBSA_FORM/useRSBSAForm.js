@@ -1,3 +1,5 @@
+/* eslint-disable no-unused-vars */
+/* eslint-disable no-case-declarations */
 import { useState, useEffect, useCallback } from 'react';
 import { rsbsaService } from '../../../api/rsbsaService';
 

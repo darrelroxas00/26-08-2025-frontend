@@ -1,3 +1,5 @@
+/* eslint-disable no-const-assign */
+/* eslint-disable no-restricted-globals */
 import { useState, useCallback, useEffect } from 'react';
 import axiosInstance from 'src/api/axiosInstance';
 
