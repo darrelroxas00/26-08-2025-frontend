@@ -355,15 +355,16 @@ const PersonalDetails = () => {
                         }
                       }}
                       disabled={!isEditing}
-                      slotProps={{
-                        textField: {
-                          fullWidth: true,
-                          error: !!errors.birth_date,
-                          helperText: errors.birth_date || 'Select your date of birth',
-                          variant: isEditing ? "outlined" : "filled",
-                          InputProps: { readOnly: !isEditing }
-                        }
-                      }}
+                      renderInput={(params) => (
+                        <TextField
+                          {...params}
+                          fullWidth
+                          error={!!errors.birth_date}
+                          helperText={errors.birth_date || 'Select your date of birth'}
+                          variant={isEditing ? "outlined" : "filled"}
+                          InputProps={{ readOnly: !isEditing }}
+                        />
+                      )}
                       maxDate={new Date()}
                     />
                     
