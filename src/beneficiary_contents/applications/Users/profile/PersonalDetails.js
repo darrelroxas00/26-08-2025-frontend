@@ -47,6 +47,7 @@ import { styled } from '@mui/material/styles';
 import { DatePicker } from '@mui/x-date-pickers/DatePicker';
 import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
 import { AdapterDateFns } from '@mui/x-date-pickers/AdapterDateFns';
+import { TextField } from '@mui/material';
 
 // Import the custom hook
 import usePersonalDetails from './hooks/userPersonalDetail';
@@ -354,16 +355,15 @@ const PersonalDetails = () => {
                         }
                       }}
                       disabled={!isEditing}
-                      renderInput={(params) => (
-                        <TextField
-                          {...params}
-                          fullWidth
-                          error={!!errors.birth_date}
-                          helperText={errors.birth_date || 'Select your date of birth'}
-                          variant={isEditing ? "outlined" : "filled"}
-                          InputProps={{ readOnly: !isEditing }}
-                        />
-                      )}
+                      slotProps={{
+                        textField: {
+                          fullWidth: true,
+                          error: !!errors.birth_date,
+                          helperText: errors.birth_date || 'Select your date of birth',
+                          variant: isEditing ? "outlined" : "filled",
+                          InputProps: { readOnly: !isEditing }
+                        }
+                      }}
                       maxDate={new Date()}
                     />
                     
