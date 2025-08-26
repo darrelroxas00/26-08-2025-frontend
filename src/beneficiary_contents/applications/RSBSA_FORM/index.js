@@ -36,6 +36,9 @@ import { styled } from '@mui/material/styles';
 // Import the custom hook
 import { useRSBSAForm } from './useRSBSAForm';
 
+// Import test utilities for development
+import '../../../utils/rsbsaFormTest';
+
 // Import form sections (we'll create these)
 import BeneficiaryProfileSection from './sections/BeneficiaryProfileSection';
 import FarmProfileSection from './sections/FarmProfileSection';

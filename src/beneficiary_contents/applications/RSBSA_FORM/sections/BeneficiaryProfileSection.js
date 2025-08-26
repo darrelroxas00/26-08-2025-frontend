@@ -93,7 +93,8 @@ const BeneficiaryProfileSection = ({ formData, errors, updateField }) => {
             <CardContent>
               <Typography variant="h6" gutterBottom color="primary" sx={{ display: 'flex', alignItems: 'center' }}>
                 Full Name
-                <Chip label="Required" color="error" size="small" sx={{ ml: 2 }} />
+                <Chip label="From User Profile" color="info" size="small" sx={{ ml: 2 }} />
+                <Chip label="Read-Only" color="warning" size="small" sx={{ ml: 1 }} />
               </Typography>
               <Divider sx={{ mb: 3 }} />
 
@@ -103,10 +104,13 @@ const BeneficiaryProfileSection = ({ formData, errors, updateField }) => {
                     fullWidth
                     label="First Name *"
                     value={formData.first_name || ''}
-                    onChange={(e) => handleFieldChange('first_name', e.target.value)}
-                    placeholder="Enter your first name"
+                    placeholder="First name from user profile"
                     error={!!errors['beneficiaryProfile.first_name']}
-                    helperText={errors['beneficiaryProfile.first_name'] || 'As written in your ID'}
+                    helperText="This information comes from your user profile and cannot be edited here"
+                    disabled
+                    InputProps={{
+                      readOnly: true
+                    }}
                   />
                 </Grid>
 
@@ -115,9 +119,12 @@ const BeneficiaryProfileSection = ({ formData, errors, updateField }) => {
                     fullWidth
                     label="Middle Name"
                     value={formData.middle_name || ''}
-                    onChange={(e) => handleFieldChange('middle_name', e.target.value)}
-                    placeholder="Enter your middle name"
-                    helperText="Optional: Include if shown in your ID"
+                    placeholder="Middle name from user profile"
+                    helperText="This information comes from your user profile and cannot be edited here"
+                    disabled
+                    InputProps={{
+                      readOnly: true
+                    }}
                   />
                 </Grid>
 
@@ -126,20 +133,23 @@ const BeneficiaryProfileSection = ({ formData, errors, updateField }) => {
                     fullWidth
                     label="Last Name *"
                     value={formData.last_name || ''}
-                    onChange={(e) => handleFieldChange('last_name', e.target.value)}
-                    placeholder="Enter your last name"
+                    placeholder="Last name from user profile"
                     error={!!errors['beneficiaryProfile.last_name']}
-                    helperText={errors['beneficiaryProfile.last_name'] || 'Your family name'}
+                    helperText="This information comes from your user profile and cannot be edited here"
+                    disabled
+                    InputProps={{
+                      readOnly: true
+                    }}
                   />
                 </Grid>
 
                 <Grid item xs={12} md={6}>
-                  <FormControl fullWidth>
+                  <FormControl fullWidth disabled>
                     <InputLabel>Name Extension</InputLabel>
                     <Select
                       value={formData.name_extension || ''}
-                      onChange={(e) => handleFieldChange('name_extension', e.target.value)}
                       label="Name Extension"
+                      disabled
                     >
                       {nameExtensionOptions.map((option) => (
                         <MenuItem key={option.value} value={option.value}>
@@ -147,7 +157,7 @@ const BeneficiaryProfileSection = ({ formData, errors, updateField }) => {
                         </MenuItem>
                       ))}
                     </Select>
-                    <FormHelperText>Optional: Jr., Sr., II, III, etc.</FormHelperText>
+                    <FormHelperText>This information comes from your user profile and cannot be edited here</FormHelperText>
                   </FormControl>
                 </Grid>
               </Grid>

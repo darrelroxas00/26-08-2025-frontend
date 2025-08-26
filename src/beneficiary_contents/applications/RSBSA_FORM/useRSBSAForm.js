@@ -1,5 +1,6 @@
 import { useState, useEffect, useCallback } from 'react';
 import { rsbsaService } from '../../../api/rsbsaService';
+import { userService } from '../../../api/userService';
 
 /**
  * Custom hook for managing RSBSA form state and operations
@@ -41,6 +42,12 @@ export const useRSBSAForm = () => {
     beneficiaryProfile: {
       id: null,
       user_id: null,
+      // Name fields from user table (read-only)
+      first_name: '',
+      middle_name: '',
+      last_name: '',
+      name_extension: '',
+      // Other beneficiary details
       system_generated_rsbsa_number: null,
       manual_rsbsa_number: null,
       rsbsa_verification_status: 'not_verified',
@@ -160,6 +167,7 @@ export const useRSBSAForm = () => {
     const loadFormData = async () => {
       try {
         setIsLoading(true);
+        console.log('🔄 Loading RSBSA form data...');
         
         // Load saved draft from localStorage
         const savedData = localStorage.getItem('rsbsa_form_data');
@@ -183,12 +191,57 @@ export const useRSBSAForm = () => {
               beneficiaryProfile: { ...prevData.beneficiaryProfile, user_id: user.id }
             }));
 
+            // Fetch user names from user table (read-only)
+            try {
+              console.log('📝 Fetching user names from API for user ID:', user.id);
+              const userNames = await userService.getUserNames(user.id);
+              console.log('✅ User names fetched:', userNames);
+              setFormData(prevData => ({
+                ...prevData,
+                beneficiaryProfile: { 
+                  ...prevData.beneficiaryProfile, 
+                  first_name: userNames.first_name || '',
+                  middle_name: userNames.middle_name || '',
+                  last_name: userNames.last_name || '',
+                  name_extension: userNames.name_extension || ''
+                }
+              }));
+            } catch (error) {
+              console.error('❌ Error loading user names from API:', error);
+              console.log('🔄 Falling back to localStorage user data...');
+              // Fallback to localStorage data
+              setFormData(prevData => ({
+                ...prevData,
+                beneficiaryProfile: { 
+                  ...prevData.beneficiaryProfile, 
+                  first_name: user.first_name || '',
+                  middle_name: user.middle_name || '',
+                  last_name: user.last_name || '',
+                  name_extension: user.name_extension || ''
+                }
+              }));
+              console.log('✅ Using fallback names:', {
+                first_name: user.first_name || '',
+                middle_name: user.middle_name || '',
+                last_name: user.last_name || '',
+                name_extension: user.name_extension || ''
+              });
+            }
+
             // Check if user already has beneficiary details
             const beneficiaryDetails = await rsbsaService.getBeneficiaryDetails(user.id);
             if (beneficiaryDetails) {
               setFormData(prevData => ({
                 ...prevData,
-                beneficiaryProfile: { ...prevData.beneficiaryProfile, ...beneficiaryDetails }
+                beneficiaryProfile: { 
+                  ...prevData.beneficiaryProfile, 
+                  ...beneficiaryDetails,
+                  // Keep user names from user table (don't override with beneficiary data)
+                  first_name: prevData.beneficiaryProfile.first_name,
+                  middle_name: prevData.beneficiaryProfile.middle_name,
+                  last_name: prevData.beneficiaryProfile.last_name,
+                  name_extension: prevData.beneficiaryProfile.name_extension
+                }
               }));
             }
 
@@ -328,6 +381,16 @@ export const useRSBSAForm = () => {
 
       // Validate beneficiary profile
       const { beneficiaryProfile } = formData;
+      
+      // Validate name fields (should come from user table)
+      if (!beneficiaryProfile.first_name?.trim()) {
+        newErrors['beneficiaryProfile.first_name'] = 'First name is required from user profile';
+      }
+      if (!beneficiaryProfile.last_name?.trim()) {
+        newErrors['beneficiaryProfile.last_name'] = 'Last name is required from user profile';
+      }
+      
+      // Validate other required fields
       if (!beneficiaryProfile.barangay?.trim()) {
         newErrors['beneficiaryProfile.barangay'] = 'Barangay is required';
       }
@@ -508,6 +571,12 @@ export const useRSBSAForm = () => {
         beneficiaryProfile: {
           id: null,
           user_id: null,
+          // Name fields from user table (read-only) - keep current values
+          first_name: formData.beneficiaryProfile?.first_name || '',
+          middle_name: formData.beneficiaryProfile?.middle_name || '',
+          last_name: formData.beneficiaryProfile?.last_name || '',
+          name_extension: formData.beneficiaryProfile?.name_extension || '',
+          // Reset other fields
           system_generated_rsbsa_number: null,
           manual_rsbsa_number: null,
           rsbsa_verification_status: 'not_verified',
