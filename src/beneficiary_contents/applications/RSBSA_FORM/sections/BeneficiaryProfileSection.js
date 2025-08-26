@@ -101,12 +101,16 @@ const BeneficiaryProfileSection = ({ formData, errors, updateField }) => {
                 <Grid item xs={12} md={6}>
                   <TextField
                     fullWidth
-                    label="First Name *"
-                    value={formData.first_name || ''}
-                    onChange={(e) => handleFieldChange('first_name', e.target.value)}
-                    placeholder="Enter your first name"
-                    error={!!errors['beneficiaryProfile.first_name']}
-                    helperText={errors['beneficiaryProfile.first_name'] || 'As written in your ID'}
+                    label="First Name"
+                    value={formData.beneficiaryProfile?.fname || ''}
+                    disabled
+                    helperText="Name from your user account (not editable)"
+                    sx={{
+                      '& .MuiInputBase-input.Mui-disabled': {
+                        WebkitTextFillColor: 'rgba(0, 0, 0, 0.87)',
+                        backgroundColor: 'rgba(0, 0, 0, 0.04)'
+                      }
+                    }}
                   />
                 </Grid>
 
@@ -114,22 +118,31 @@ const BeneficiaryProfileSection = ({ formData, errors, updateField }) => {
                   <TextField
                     fullWidth
                     label="Middle Name"
-                    value={formData.middle_name || ''}
-                    onChange={(e) => handleFieldChange('middle_name', e.target.value)}
-                    placeholder="Enter your middle name"
-                    helperText="Optional: Include if shown in your ID"
+                    value={formData.beneficiaryProfile?.mname || ''}
+                    disabled
+                    helperText="Name from your user account (not editable)"
+                    sx={{
+                      '& .MuiInputBase-input.Mui-disabled': {
+                        WebkitTextFillColor: 'rgba(0, 0, 0, 0.87)',
+                        backgroundColor: 'rgba(0, 0, 0, 0.04)'
+                      }
+                    }}
                   />
                 </Grid>
 
                 <Grid item xs={12} md={6}>
                   <TextField
                     fullWidth
-                    label="Last Name *"
-                    value={formData.last_name || ''}
-                    onChange={(e) => handleFieldChange('last_name', e.target.value)}
-                    placeholder="Enter your last name"
-                    error={!!errors['beneficiaryProfile.last_name']}
-                    helperText={errors['beneficiaryProfile.last_name'] || 'Your family name'}
+                    label="Last Name"
+                    value={formData.beneficiaryProfile?.lname || ''}
+                    disabled
+                    helperText="Name from your user account (not editable)"
+                    sx={{
+                      '& .MuiInputBase-input.Mui-disabled': {
+                        WebkitTextFillColor: 'rgba(0, 0, 0, 0.87)',
+                        backgroundColor: 'rgba(0, 0, 0, 0.04)'
+                      }
+                    }}
                   />
                 </Grid>
 
@@ -137,8 +150,8 @@ const BeneficiaryProfileSection = ({ formData, errors, updateField }) => {
                   <FormControl fullWidth>
                     <InputLabel>Name Extension</InputLabel>
                     <Select
-                      value={formData.name_extension || ''}
-                      onChange={(e) => handleFieldChange('name_extension', e.target.value)}
+                      value={formData.beneficiaryProfile?.extension_name || ''}
+                      onChange={(e) => handleFieldChange('extension_name', e.target.value)}
                       label="Name Extension"
                     >
                       {nameExtensionOptions.map((option) => (
