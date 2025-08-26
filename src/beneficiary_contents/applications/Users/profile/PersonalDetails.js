@@ -53,25 +53,51 @@ import usePersonalDetails from './hooks/userPersonalDetail';
 
 // Utility functions
 const calculateAge = (birthDate) => {
-  if (!birthDate) return null;
-  const today = new Date();
-  const birth = new Date(birthDate);
-  let age = today.getFullYear() - birth.getFullYear();
-  const monthDiff = today.getMonth() - birth.getMonth();
-  if (monthDiff < 0 || (monthDiff === 0 && today.getDate() < birth.getDate())) {
-    age--;
+  try {
+    if (!birthDate) return null;
+    
+    const today = new Date();
+    const birth = new Date(birthDate);
+    
+    // Validate dates
+    if (isNaN(birth.getTime()) || isNaN(today.getTime())) {
+      return null;
+    }
+    
+    let age = today.getFullYear() - birth.getFullYear();
+    const monthDiff = today.getMonth() - birth.getMonth();
+    
+    if (monthDiff < 0 || (monthDiff === 0 && today.getDate() < birth.getDate())) {
+      age--;
+    }
+    
+    return age > 0 ? age : null;
+  } catch (error) {
+    console.error('Age calculation error:', error);
+    return null;
   }
-  return age;
 };
 
 const formatDate = (dateString) => {
-  if (!dateString) return '';
-  const date = new Date(dateString);
-  return date.toLocaleDateString('en-US', {
-    year: 'numeric',
-    month: 'long',
-    day: 'numeric'
-  });
+  try {
+    if (!dateString) return '';
+    
+    const date = new Date(dateString);
+    
+    // Validate date
+    if (isNaN(date.getTime())) {
+      return '';
+    }
+    
+    return date.toLocaleDateString('en-US', {
+      year: 'numeric',
+      month: 'long',
+      day: 'numeric'
+    });
+  } catch (error) {
+    console.error('Date formatting error:', error);
+    return '';
+  }
 };
 
 // Styled components
@@ -301,17 +327,29 @@ const PersonalDetails = () => {
                       label="Birth Date *"
                       value={formData.birth_date ? new Date(formData.birth_date) : null}
                       onChange={(date) => {
-                        if (date) {
-                          // Validate that date is not in the future
-                          const today = new Date();
-                          if (date > today) {
+                        try {
+                          if (date && date instanceof Date && !isNaN(date)) {
+                            // Validate that date is not in the future
+                            const today = new Date();
+                            today.setHours(23, 59, 59, 999); // End of today
+                            
+                            if (date > today) {
+                              updateField('birth_date', '');
+                              return;
+                            }
+                            
+                            // Format date as YYYY-MM-DD for backend
+                            const year = date.getFullYear();
+                            const month = String(date.getMonth() + 1).padStart(2, '0');
+                            const day = String(date.getDate()).padStart(2, '0');
+                            const formattedDate = `${year}-${month}-${day}`;
+                            
+                            updateField('birth_date', formattedDate);
+                          } else {
                             updateField('birth_date', '');
-                            return;
                           }
-                          // Format date as YYYY-MM-DD for backend
-                          const formattedDate = date.toISOString().split('T')[0];
-                          updateField('birth_date', formattedDate);
-                        } else {
+                        } catch (error) {
+                          console.error('Date handling error:', error);
                           updateField('birth_date', '');
                         }
                       }}
