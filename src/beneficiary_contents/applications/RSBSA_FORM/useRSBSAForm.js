@@ -41,6 +41,10 @@ export const useRSBSAForm = () => {
     beneficiaryProfile: {
       id: null,
       user_id: null,
+      fname: '',
+      mname: '',
+      lname: '',
+      extension_name: '',
       system_generated_rsbsa_number: null,
       manual_rsbsa_number: null,
       rsbsa_verification_status: 'not_verified',
@@ -180,7 +184,15 @@ export const useRSBSAForm = () => {
             setFormData(prevData => ({
               ...prevData,
               enrollment: { ...prevData.enrollment, user_id: user.id },
-              beneficiaryProfile: { ...prevData.beneficiaryProfile, user_id: user.id }
+              beneficiaryProfile: { 
+                ...prevData.beneficiaryProfile, 
+                user_id: user.id,
+                // Load user name from user object
+                fname: user.fname || '',
+                mname: user.mname || '',
+                lname: user.lname || '',
+                extension_name: user.extension_name || ''
+              }
             }));
 
             // Check if user already has beneficiary details
@@ -188,7 +200,15 @@ export const useRSBSAForm = () => {
             if (beneficiaryDetails) {
               setFormData(prevData => ({
                 ...prevData,
-                beneficiaryProfile: { ...prevData.beneficiaryProfile, ...beneficiaryDetails }
+                beneficiaryProfile: { 
+                  ...prevData.beneficiaryProfile, 
+                  ...beneficiaryDetails,
+                  // Preserve user name from user object
+                  fname: user.fname || beneficiaryDetails.fname || '',
+                  mname: user.mname || beneficiaryDetails.mname || '',
+                  lname: user.lname || beneficiaryDetails.lname || '',
+                  extension_name: user.extension_name || beneficiaryDetails.extension_name || ''
+                }
               }));
             }
 
@@ -600,6 +620,10 @@ export const useRSBSAForm = () => {
         beneficiaryProfile: {
           id: null,
           user_id: null,
+          fname: '',
+          mname: '',
+          lname: '',
+          extension_name: '',
           system_generated_rsbsa_number: null,
           manual_rsbsa_number: null,
           rsbsa_verification_status: 'not_verified',

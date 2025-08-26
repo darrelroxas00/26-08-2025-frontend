@@ -184,7 +184,7 @@ const BeneficiaryProfileSection = ({ formData, errors, updateField }) => {
                   <FormControl fullWidth error={!!errors['beneficiaryProfile.barangay']}>
                     <InputLabel>Barangay *</InputLabel>
                     <Select
-                      value={formData.barangay || ''}
+                      value={formData.beneficiaryProfile?.barangay || ''}
                       onChange={(e) => handleFieldChange('barangay', e.target.value)}
                       label="Barangay *"  
                     >
@@ -204,7 +204,7 @@ const BeneficiaryProfileSection = ({ formData, errors, updateField }) => {
                   <TextField
                     fullWidth
                     label="Municipality"
-                    value={formData.municipality || 'Opol'}
+                    value={formData.beneficiaryProfile?.municipality || 'Opol'}
                     disabled
                     helperText="Default: Opol"
                   />
@@ -214,7 +214,7 @@ const BeneficiaryProfileSection = ({ formData, errors, updateField }) => {
                   <TextField
                     fullWidth
                     label="Province"
-                    value={formData.province || 'Misamis Oriental'}
+                    value={formData.beneficiaryProfile?.province || 'Misamis Oriental'}
                     disabled
                     helperText="Default: Misamis Oriental"
                   />
@@ -224,9 +224,9 @@ const BeneficiaryProfileSection = ({ formData, errors, updateField }) => {
                   <TextField
                     fullWidth
                     label="Region"
-                    value={formData.region || 'Region X (Northern Mindanao)'}
+                    value={formData.beneficiaryProfile?.region || 'Region X (Northern Mindanao)'}
                     disabled
-                    helperText="Default: Region X"
+                    helperText="Default: Region X (Northern Mindanao)"
                   />
                 </Grid>
 
@@ -235,7 +235,7 @@ const BeneficiaryProfileSection = ({ formData, errors, updateField }) => {
                   <TextField
                     fullWidth
                     label="Contact Number *"
-                    value={formData.contact_number || ''}
+                    value={formData.beneficiaryProfile?.contact_number || ''}
                     onChange={(e) => handleFieldChange('contact_number', e.target.value)}
                     placeholder="Enter your contact number"
                     error={!!errors['beneficiaryProfile.contact_number']}
@@ -247,7 +247,7 @@ const BeneficiaryProfileSection = ({ formData, errors, updateField }) => {
                   <TextField
                     fullWidth
                     label="Emergency Contact Number"
-                    value={formData.emergency_contact_number || ''}
+                    value={formData.beneficiaryProfile?.emergency_contact_number || ''}
                     onChange={(e) => handleFieldChange('emergency_contact_number', e.target.value)}
                     placeholder="Emergency contact number"
                     helperText="Optional: Alternative contact number"
@@ -260,7 +260,7 @@ const BeneficiaryProfileSection = ({ formData, errors, updateField }) => {
                     fullWidth
                     label="Birth Date *"
                     type="date"
-                    value={formData.birth_date || ''}
+                    value={formData.beneficiaryProfile?.birth_date || ''}
                     onChange={(e) => handleFieldChange('birth_date', e.target.value)}
                     InputLabelProps={{ shrink: true }}
                     error={!!errors['beneficiaryProfile.birth_date']}
@@ -272,7 +272,7 @@ const BeneficiaryProfileSection = ({ formData, errors, updateField }) => {
                   <TextField
                     fullWidth
                     label="Place of Birth"
-                    value={formData.place_of_birth || ''}
+                    value={formData.beneficiaryProfile?.place_of_birth || ''}
                     onChange={(e) => handleFieldChange('place_of_birth', e.target.value)}
                     placeholder="City/Municipality of birth"
                   />
@@ -282,7 +282,7 @@ const BeneficiaryProfileSection = ({ formData, errors, updateField }) => {
                   <FormControl fullWidth error={!!errors['beneficiaryProfile.sex']}>
                     <InputLabel>Sex *</InputLabel>
                     <Select
-                      value={formData.sex || ''}
+                      value={formData.beneficiaryProfile?.sex || ''}
                       onChange={(e) => handleFieldChange('sex', e.target.value)}
                       label="Sex *"
                     >
@@ -302,7 +302,7 @@ const BeneficiaryProfileSection = ({ formData, errors, updateField }) => {
                   <FormControl fullWidth error={!!errors['beneficiaryProfile.civil_status']}>
                     <InputLabel>Civil Status *</InputLabel>
                     <Select
-                      value={formData.civil_status || ''}
+                      value={formData.beneficiaryProfile?.civil_status || ''}
                       onChange={(e) => handleFieldChange('civil_status', e.target.value)}
                       label="Civil Status *"
                     >
@@ -318,12 +318,12 @@ const BeneficiaryProfileSection = ({ formData, errors, updateField }) => {
                   </FormControl>
                 </Grid>
 
-                {formData.civil_status === 'married' && (
+                {formData.beneficiaryProfile?.civil_status === 'married' && (
                   <Grid item xs={12} md={6}>
                     <TextField
                       fullWidth
                       label="Name of Spouse"
-                      value={formData.name_of_spouse || ''}
+                      value={formData.beneficiaryProfile?.name_of_spouse || ''}
                       onChange={(e) => handleFieldChange('name_of_spouse', e.target.value)}
                       placeholder="Enter spouse's full name"
                     />
@@ -335,7 +335,7 @@ const BeneficiaryProfileSection = ({ formData, errors, updateField }) => {
                   <FormControl fullWidth>
                     <InputLabel>Highest Education</InputLabel>
                     <Select
-                      value={formData.highest_education || ''}
+                      value={formData.beneficiaryProfile?.highest_education || ''}
                       onChange={(e) => handleFieldChange('highest_education', e.target.value)}
                       label="Highest Education"
                     >
@@ -352,7 +352,7 @@ const BeneficiaryProfileSection = ({ formData, errors, updateField }) => {
                   <TextField
                     fullWidth
                     label="Religion"
-                    value={formData.religion || ''}
+                    value={formData.beneficiaryProfile?.religion || ''}
                     onChange={(e) => handleFieldChange('religion', e.target.value)}
                     placeholder="Enter your religion"
                   />
@@ -363,7 +363,7 @@ const BeneficiaryProfileSection = ({ formData, errors, updateField }) => {
                   <FormControlLabel
                     control={
                       <Switch
-                        checked={formData.is_pwd || false}
+                        checked={formData.beneficiaryProfile?.is_pwd || false}
                         onChange={(e) => handleFieldChange('is_pwd', e.target.checked)}
                         color="primary"
                       />
@@ -377,7 +377,7 @@ const BeneficiaryProfileSection = ({ formData, errors, updateField }) => {
                   <FormControl fullWidth>
                     <InputLabel>Has Government ID</InputLabel>
                     <Select
-                      value={formData.has_government_id || 'no'}
+                      value={formData.beneficiaryProfile?.has_government_id || 'no'}
                       onChange={(e) => handleFieldChange('has_government_id', e.target.value)}
                       label="Has Government ID"
                     >
@@ -390,13 +390,13 @@ const BeneficiaryProfileSection = ({ formData, errors, updateField }) => {
                   </FormControl>
                 </Grid>
 
-                {formData.has_government_id === 'yes' && (
+                {formData.beneficiaryProfile?.has_government_id === 'yes' && (
                   <>
                     <Grid item xs={12} md={6}>
                       <TextField
                         fullWidth
                         label="Government ID Type"
-                        value={formData.gov_id_type || ''}
+                        value={formData.beneficiaryProfile?.gov_id_type || ''}
                         onChange={(e) => handleFieldChange('gov_id_type', e.target.value)}
                         placeholder="e.g., Driver's License, PhilID, Passport"
                       />
@@ -406,7 +406,7 @@ const BeneficiaryProfileSection = ({ formData, errors, updateField }) => {
                       <TextField
                         fullWidth
                         label="Government ID Number"
-                        value={formData.gov_id_number || ''}
+                        value={formData.beneficiaryProfile?.gov_id_number || ''}
                         onChange={(e) => handleFieldChange('gov_id_number', e.target.value)}
                         placeholder="Enter ID number"
                       />
@@ -419,7 +419,7 @@ const BeneficiaryProfileSection = ({ formData, errors, updateField }) => {
                   <FormControl fullWidth>
                     <InputLabel>Member of Association</InputLabel>
                     <Select
-                      value={formData.is_association_member || 'no'}
+                      value={formData.beneficiaryProfile?.is_association_member || 'no'}
                       onChange={(e) => handleFieldChange('is_association_member', e.target.value)}
                       label="Member of Association"
                     >
@@ -432,12 +432,12 @@ const BeneficiaryProfileSection = ({ formData, errors, updateField }) => {
                   </FormControl>
                 </Grid>
 
-                {formData.is_association_member === 'yes' && (
+                {formData.beneficiaryProfile?.is_association_member === 'yes' && (
                   <Grid item xs={12} md={6}>
                     <TextField
                       fullWidth
                       label="Association Name"
-                      value={formData.association_name || ''}
+                      value={formData.beneficiaryProfile?.association_name || ''}
                       onChange={(e) => handleFieldChange('association_name', e.target.value)}
                       placeholder="Enter association name"
                     />
@@ -449,7 +449,7 @@ const BeneficiaryProfileSection = ({ formData, errors, updateField }) => {
                   <TextField
                     fullWidth
                     label="Mother's Maiden Name"
-                    value={formData.mothers_maiden_name || ''}
+                    value={formData.beneficiaryProfile?.mothers_maiden_name || ''}
                     onChange={(e) => handleFieldChange('mothers_maiden_name', e.target.value)}
                     placeholder="Enter mother's maiden name"
                   />
@@ -459,7 +459,7 @@ const BeneficiaryProfileSection = ({ formData, errors, updateField }) => {
                   <FormControlLabel
                     control={
                       <Switch
-                        checked={formData.is_household_head || false}
+                        checked={formData.beneficiaryProfile?.is_household_head || false}
                         onChange={(e) => handleFieldChange('is_household_head', e.target.checked)}
                         color="primary"
                       />
@@ -468,12 +468,12 @@ const BeneficiaryProfileSection = ({ formData, errors, updateField }) => {
                   />
                 </Grid>
 
-                {!formData.is_household_head && (
+                {!formData.beneficiaryProfile?.is_household_head && (
                   <Grid item xs={12} md={6}>
                     <TextField
                       fullWidth
                       label="Household Head Name"
-                      value={formData.household_head_name || ''}
+                      value={formData.beneficiaryProfile?.household_head_name || ''}
                       onChange={(e) => handleFieldChange('household_head_name', e.target.value)}
                       placeholder="Enter household head name"
                     />
