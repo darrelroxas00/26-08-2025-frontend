@@ -158,3 +158,6 @@ Route::middleware(['auth:sanctum'])->group(function () {
 
 // Public RSBSA status check
 Route::get('rsbsa/status/{reference_code}', [RsbsaController::class, 'getByReferenceCode']);
+
+// Test route for debugging
+Route::get('test/beneficiary-details/{userId}', [BeneficiaryDetailsController::class, 'getByUserId']);

@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\BeneficiaryDetail;
+use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Validator;
@@ -155,11 +156,59 @@ class BeneficiaryDetailsController extends Controller
                 ->with(['user'])
                 ->first();
 
+            // If no beneficiary details exist, return user data only
             if (!$beneficiaryDetail) {
+                $user = User::find($userId);
+                if (!$user) {
+                    return response()->json([
+                        'success' => false,
+                        'message' => 'User not found'
+                    ], 404);
+                }
+
+                // Return user data with empty beneficiary details
+                $responseData = [
+                    'id' => null,
+                    'user_id' => $userId,
+                    'fname' => $user->fname,
+                    'mname' => $user->mname,
+                    'lname' => $user->lname,
+                    'extension_name' => $user->extension_name,
+                    'birth_date' => null,
+                    'place_of_birth' => null,
+                    'sex' => null,
+                    'civil_status' => null,
+                    'barangay' => '',
+                    'municipality' => 'Opol',
+                    'province' => 'Misamis Oriental',
+                    'region' => 'Region X (Northern Mindanao)',
+                    'contact_number' => '',
+                    'emergency_contact_number' => null,
+                    'has_government_id' => 'no',
+                    'gov_id_type' => null,
+                    'gov_id_number' => null,
+                    'is_association_member' => 'no',
+                    'association_name' => null,
+                    'mothers_maiden_name' => null,
+                    'is_household_head' => false,
+                    'household_head_name' => null,
+                    'highest_education' => null,
+                    'religion' => null,
+                    'is_pwd' => false,
+                    'name_of_spouse' => null,
+                    'profile_completion_status' => 'pending',
+                    'rsbsa_verification_status' => 'not_verified',
+                    'interview_status' => 'not_interviewed',
+                    'data_source' => 'self_registration',
+                    'created_at' => null,
+                    'updated_at' => null
+                ];
+
                 return response()->json([
-                    'success' => false,
-                    'message' => 'Beneficiary details not found'
-                ], 404);
+                    'success' => true,
+                    'data' => $responseData,
+                    'message' => 'No beneficiary details found, returning user data only'
+                ]);
             }
 
             // Add user name data to the response
