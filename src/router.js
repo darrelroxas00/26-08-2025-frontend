@@ -182,10 +182,9 @@ const routes = [
         path: 'rsbsa', // 📊 RSBSA management section with nested routes
         children: [
           { 
-            path: '', // Default redirect to status when accessing /beneficiary/rsbsa/
-            element: <Navigate to="status" replace /> 
-          },
-        
+            path: '', // Default redirect to RSBSA_FORM when accessing /beneficiary/rsbsa/
+            element: <Navigate to="../RSBSA_FORM" replace /> 
+          }
         ]
       },
 

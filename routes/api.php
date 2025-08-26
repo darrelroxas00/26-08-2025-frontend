@@ -3,6 +3,7 @@
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\RsbsaController;
+use App\Http\Controllers\BeneficiaryDetailsController; // Added this import
 
 /*
 |--------------------------------------------------------------------------
@@ -27,6 +28,14 @@ Route::middleware(['auth:sanctum'])->group(function () {
     // Additional RSBSA routes
     Route::get('rsbsa/user/enrollment', [RsbsaController::class, 'getUserEnrollment']);
     Route::post('rsbsa/reference-code', [RsbsaController::class, 'getByReferenceCode']);
+
+    // -------------------- Beneficiary Details routes --------------------
+    // Beneficiary profile management
+    Route::get('/beneficiary-details/{userId}', [BeneficiaryDetailsController::class, 'show']);
+    Route::get('/beneficiary-details/user/{userId}', [BeneficiaryDetailsController::class, 'getByUserId']); // ADDED THIS ROUTE
+    Route::post('/beneficiary-details', [BeneficiaryDetailsController::class, 'store']);
+    Route::put('/beneficiary-details/{userId}', [BeneficiaryDetailsController::class, 'update']);
+    Route::get('/beneficiary-details/{userId}/verification-status', [BeneficiaryDetailsController::class, 'getVerificationStatus']);
 });
 
 // Public routes (if any)
