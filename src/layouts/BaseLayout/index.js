@@ -20,13 +20,15 @@ const AUTH_PAGES = [
   '/beneficiary-register',
 ];
 
-// Also exclude status pages
+// Also exclude status pages AND RSBSA routes
 const EXCLUDED_PATHS = [
   ...AUTH_PAGES,
   '/status/404',
   '/status/500',
   '/status/maintenance', 
-  '/status/coming-soon'
+  '/status/coming-soon',
+  '/beneficiary/RSBSA_FORM',  // ✅ ADD THIS - RSBSA form route
+  '/beneficiary/rsbsa'        // ✅ ADD THIS - RSBSA management route
 ];
 
 const BaseLayout = ({ children }) => {
@@ -62,6 +64,7 @@ const BaseLayout = ({ children }) => {
           
           console.log('BaseLayout - Sections:', { current: currentSection, target: targetSection });
           
+          // Don't redirect if we're already in the correct section
           if (currentSection !== targetSection) {
             console.log(`BaseLayout: Redirecting ${role} from ${location.pathname} to ${targetDashboard}`);
             navigate(targetDashboard, { replace: true });
