@@ -100,6 +100,7 @@ const RSBSAForm = () => {
   const {
     formData,
     errors,
+    setErrors,
     isLoading,
     isSubmitting,
     currentStep,
@@ -178,6 +179,31 @@ const RSBSAForm = () => {
     }
   };
 
+  // Handle form submission
+  const handleSubmit = async () => {
+    try {
+      const success = await submitForm();
+      if (success) {
+        setShowSuccess(true);
+        setShowError(false);
+      } else {
+        setShowError(true);
+        setErrorMessage('Form submission failed. Please check your inputs and try again.');
+      }
+    } catch (error) {
+      console.error('Submission error:', error);
+      setShowError(true);
+      setErrorMessage('An unexpected error occurred. Please try again.');
+    }
+  };
+
+  // Check if form can be submitted
+  const canSubmit = () => {
+    return Object.keys(errors).length === 0 && 
+           formData.farmParcels.length > 0 && 
+           formData.farmProfile.livelihood_category_id;
+  };
+
   // Handle next step with validation
   const handleNextStep = () => {
     if (hasStepErrors()) {
@@ -230,32 +256,6 @@ const RSBSAForm = () => {
       description: 'Submit your application'
     }
   ];
-
-  // Handle form submission
-  const handleSubmit = async () => {
-    try {
-      console.log('Form submission started...');
-      console.log('Current form data:', formData);
-      console.log('Current errors:', errors);
-      
-      const success = await submitForm();
-      if (success) {
-        console.log('Form submitted successfully');
-        setShowSuccess(true);
-        setShowError(false);
-      } else {
-        console.log('Form submission failed');
-        setShowError(true);
-        setErrorMessage('Failed to submit form. Please check your input and try again.');
-        setShowSuccess(false);
-      }
-    } catch (error) {
-      console.error('Error in form submission handler:', error);
-      setShowError(true);
-      setErrorMessage(`Submission error: ${error.message}`);
-      setShowSuccess(false);
-    }
-  };
 
   // Handle form reset
   const handleReset = () => {
@@ -330,7 +330,7 @@ const RSBSAForm = () => {
             formData={formData}
             isSubmitting={isSubmitting}
             onSubmit={handleSubmit}
-            canSubmit={canSubmit}
+            canSubmit={canSubmit()}
           />
         );
       default:

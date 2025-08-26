@@ -715,33 +715,27 @@ export const useRSBSAForm = () => {
     }
   }, [formData]);
 
+  // Return all necessary functions and state
   return {
-    // State
     formData,
     errors,
+    setErrors,
     isLoading,
     isSubmitting,
     currentStep,
     totalSteps,
-
-    // Actions
-    updateField,
-    addFarmParcel,
-    updateFarmParcel,
-    removeFarmParcel,
-    updateLivelihoodDetails,
-    validateForm,
     nextStep,
     prevStep,
     goToStep,
     submitForm,
     saveDraft,
     resetForm,
-
-    // Computed values
-    formProgress: getFormProgress(),
-    isValid: Object.keys(errors).length === 0,
-    canSubmit: Object.keys(errors).length === 0 && formData.farmParcels.length > 0
+    updateField,
+    addFarmParcel,
+    updateFarmParcel,
+    removeFarmParcel,
+    updateLivelihoodDetails,
+    validateCurrentStep
   };
 };
 
