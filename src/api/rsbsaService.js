@@ -146,7 +146,7 @@ export const rsbsaService = {
    */
   async getBeneficiaryDetails(userId) {
     try {
-      const response = await apiClient.get(`/beneficiary-details/user/${userId}`);
+      const response = await apiClient.get(`/test/beneficiary-details/${userId}`);
       return response.data;
     } catch (error) {
       throw new Error(error.response?.data?.message || 'Failed to fetch beneficiary details');
