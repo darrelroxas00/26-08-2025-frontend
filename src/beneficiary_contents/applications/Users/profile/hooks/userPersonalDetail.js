@@ -115,13 +115,23 @@ const usePersonalDetails = (userId = null) => {
 
   // Update field function
   const updateField = useCallback((field, value) => {
-    setFormData(prev => ({
-      ...prev,
-      [field]: value
-    }));
+    console.log('=== UPDATE FIELD CALLED ===');
+    console.log('Field:', field);
+    console.log('Old value:', formData[field]);
+    console.log('New value:', value);
+    
+    setFormData(prev => {
+      const updated = {
+        ...prev,
+        [field]: value
+      };
+      console.log('Updated formData:', updated);
+      return updated;
+    });
 
     // Clear error when field is updated
     if (errors[field]) {
+      console.log('Clearing error for field:', field);
       setErrors(prev => {
         const newErrors = { ...prev };
         delete newErrors[field];
@@ -162,13 +172,28 @@ const usePersonalDetails = (userId = null) => {
 
   // Validation function
   const validateForm = useCallback(() => {
+    console.log('=== FORM VALIDATION STARTED ===');
+    console.log('Validating formData:', formData);
+    
     const newErrors = {};
 
     // Required fields validation
-    if (!formData.barangay) newErrors.barangay = 'Barangay is required';
-    if (!formData.contact_number) newErrors.contact_number = 'Contact number is required';
-    if (!formData.birth_date) newErrors.birth_date = 'Birth date is required';
-    if (!formData.sex) newErrors.sex = 'Sex is required';
+    if (!formData.barangay) {
+      newErrors.barangay = 'Barangay is required';
+      console.log('Validation error: Barangay missing');
+    }
+    if (!formData.contact_number) {
+      newErrors.contact_number = 'Contact number is required';
+      console.log('Validation error: Contact number missing');
+    }
+    if (!formData.birth_date) {
+      newErrors.birth_date = 'Birth date is required';
+      console.log('Validation error: Birth date missing');
+    }
+    if (!formData.sex) {
+      newErrors.sex = 'Sex is required';
+      console.log('Validation error: Sex missing');
+    }
 
     // Contact number format validation
     if (formData.contact_number && !/^09\d{9}$/.test(formData.contact_number)) {
@@ -199,6 +224,8 @@ const usePersonalDetails = (userId = null) => {
     }
 
     setErrors(newErrors);
+    console.log('Validation errors found:', newErrors);
+    console.log('Validation passed:', Object.keys(newErrors).length === 0);
     return Object.keys(newErrors).length === 0;
   }, [formData]);
 
@@ -273,13 +300,21 @@ const usePersonalDetails = (userId = null) => {
 
   // Save data function with UPSERT logic
   const savePersonalDetails = useCallback(async () => {
+    console.log('=== SAVE PERSONAL DETAILS CALLED ===');
+    console.log('Current formData:', formData);
+    console.log('Current userId:', userId);
+    
     if (!validateForm()) {
+      console.log('Form validation failed');
+      console.log('Current errors:', errors);
       return false;
     }
 
+    console.log('Form validation passed, proceeding with save...');
     setSaving(true);
     try {
       const backendData = transformToBackend(formData);
+      console.log('Transformed backend data:', backendData);
 
       // UPSERT Logic: Use POST for both create and update
       // The backend controller handles the updateOrCreate logic
@@ -287,20 +322,30 @@ const usePersonalDetails = (userId = null) => {
         user_id: userId,
         ...backendData
       };
+      console.log('Final payload to send:', payload);
 
       // API call to save/update beneficiary details
+      console.log('Making API call to /api/beneficiary-details...');
       const response = await axiosInstance.post('/api/beneficiary-details', payload);
 
-      if (response.data.success) {
+      console.log('API Response received:', response);
+      
+      if (response.data && response.data.success) {
+        console.log('API call successful!');
         const savedData = response.data.data;
+        console.log('Saved data from API:', savedData);
+        
         // Transform data back from backend
         const transformedData = transformFromBackend(savedData);
+        console.log('Transformed data for frontend:', transformedData);
+        
         setFormData(transformedData);
         setIsExistingRecord(true);
         
         // Also save to localStorage as backup
         if (userId) {
           localStorage.setItem(`personal_details_${userId}`, JSON.stringify(transformedData));
+          console.log('Data saved to localStorage');
         }
 
         // Update completion tracking
@@ -319,11 +364,12 @@ const usePersonalDetails = (userId = null) => {
         updateField('profile_completion_status', 'completed');
         updateField('last_updated_by_beneficiary', new Date().toISOString());
 
+        console.log('Save operation completed successfully');
         return true;
+      } else {
+        console.log('API response indicates failure:', response.data);
+        return false;
       }
-      
-      // If response.data.success is false, return false
-      return false;
     } catch (error) {
       console.error('Error saving personal details:', error);
       setErrors({ 

@@ -84,6 +84,11 @@ const PersonalDetails = () => {
   // Get user ID from localStorage
   const storedUser = JSON.parse(localStorage.getItem('user')) || {};
   const userId = storedUser.id || storedUser.user_id;
+  
+  // DEBUG: Log initial user data
+  console.log('=== PersonalDetails Component Initialized ===');
+  console.log('Stored user from localStorage:', storedUser);
+  console.log('Extracted userId:', userId);
 
   const {
     formData,
@@ -100,6 +105,13 @@ const PersonalDetails = () => {
     getCompletionPercentage,
     resetForm
   } = usePersonalDetails(userId);
+  
+  // DEBUG: Log hook data
+  console.log('Hook data received:');
+  console.log('- formData:', formData);
+  console.log('- errors:', errors);
+  console.log('- loading:', loading);
+  console.log('- saving:', saving);
 
   const [isEditing, setIsEditing] = useState(false);
   const [saveSuccess, setSaveSuccess] = useState(false);
@@ -113,20 +125,38 @@ const PersonalDetails = () => {
 
   // Handle save
   const handleSave = async () => {
-    const success = await savePersonalDetails();
-    if (success) {
-      setIsEditing(false);
-      setSaveSuccess(true);
-      setSaveError('');
-      setTimeout(() => setSaveSuccess(false), 3000);
-    } else {
-      setSaveError('Failed to save personal details. Please try again.');
+    console.log('=== SAVE BUTTON CLICKED ===');
+    console.log('Current formData before save:', formData);
+    console.log('Current errors before save:', errors);
+    console.log('Is editing:', isEditing);
+    
+    try {
+      console.log('Calling savePersonalDetails...');
+      const success = await savePersonalDetails();
+      console.log('Save result:', success);
+      
+      if (success) {
+        console.log('Save successful - updating UI states');
+        setIsEditing(false);
+        setSaveSuccess(true);
+        setSaveError('');
+        setTimeout(() => setSaveSuccess(false), 3000);
+      } else {
+        console.log('Save failed - showing error message');
+        setSaveError('Failed to save personal details. Please try again.');
+        setTimeout(() => setSaveError(''), 3000);
+      }
+    } catch (error) {
+      console.error('Error in handleSave:', error);
+      setSaveError('An unexpected error occurred. Please try again.');
       setTimeout(() => setSaveError(''), 3000);
     }
   };
 
   // Handle cancel
   const handleCancel = () => {
+    console.log('=== CANCEL BUTTON CLICKED ===');
+    console.log('Exiting edit mode');
     setIsEditing(false);
     // Optionally reload data or reset form
   };
@@ -217,7 +247,12 @@ const PersonalDetails = () => {
                 <Tooltip title="Edit Profile">
                   <IconButton 
                     color="primary" 
-                    onClick={() => setIsEditing(true)}
+                    onClick={() => {
+                      console.log('=== EDIT BUTTON CLICKED ===');
+                      console.log('Entering edit mode');
+                      console.log('Current formData:', formData);
+                      setIsEditing(true);
+                    }}
                   >
                     <EditIcon />
                   </IconButton>
@@ -362,7 +397,13 @@ const PersonalDetails = () => {
                     fullWidth
                     label="Contact Number *"
                     value={formData.contact_number}
-                    onChange={(e) => updateField('contact_number', e.target.value)}
+                    onChange={(e) => {
+                      console.log('=== CONTACT NUMBER FIELD CHANGE ===');
+                      console.log('Old value:', formData.contact_number);
+                      console.log('New value:', e.target.value);
+                      console.log('Is editing:', isEditing);
+                      updateField('contact_number', e.target.value);
+                    }}
                     disabled={!isEditing}
                     variant={isEditing ? "outlined" : "filled"}
                     InputProps={{ readOnly: !isEditing }}
