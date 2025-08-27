@@ -315,11 +315,12 @@ const usePersonalDetails = (userId = null) => {
         ...backendData
       };
 
-      // API call to save/update beneficiary details
+      // API call to save/update beneficiary details - ENHANCED DEBUGGING
       console.log('🔍 Making API call to save personal details...');
       console.log('📡 API URL:', '/api/beneficiary-details');
       console.log('📦 Payload:', payload);
       console.log('🔑 User ID:', userId);
+      console.log('⏰ Timestamp:', new Date().toISOString());
       
       const response = await axiosInstance.post('/api/beneficiary-details', payload);
       
