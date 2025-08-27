@@ -316,7 +316,16 @@ const usePersonalDetails = (userId = null) => {
       };
 
       // API call to save/update beneficiary details
+      console.log('🔍 Making API call to save personal details...');
+      console.log('📡 API URL:', '/api/beneficiary-details');
+      console.log('📦 Payload:', payload);
+      console.log('🔑 User ID:', userId);
+      
       const response = await axiosInstance.post('/api/beneficiary-details', payload);
+      
+      console.log('✅ API Response received:', response);
+      console.log('📄 Response status:', response.status);
+      console.log('📊 Response data:', response.data);
 
       if (response.data.success) {
         const savedData = response.data.data;
@@ -352,10 +361,41 @@ const usePersonalDetails = (userId = null) => {
       // If response.data.success is false, return false
       return false;
     } catch (error) {
-      console.error('Error saving personal details:', error);
-      setErrors({ 
-        general: error.response?.data?.message || 'Failed to save profile data' 
-      });
+      console.error('❌ ERROR saving personal details:', error);
+      console.error('🔍 Error details:');
+      console.error('- Error message:', error.message);
+      console.error('- Error status:', error.response?.status);
+      console.error('- Error statusText:', error.response?.statusText);
+      console.error('- Error data:', error.response?.data);
+      console.error('- Error config:', error.config);
+      console.error('- Full error object:', error);
+      
+      // Check for specific error types
+      if (error.code === 'ECONNREFUSED') {
+        console.error('🚫 Connection refused - Backend server might be down');
+        setErrors({ 
+          general: 'Cannot connect to server. Please check if the backend is running on http://127.0.0.1:8000' 
+        });
+      } else if (error.response?.status === 404) {
+        console.error('🔍 404 Error - API endpoint not found');
+        setErrors({ 
+          general: 'API endpoint not found. Please check the backend routes.' 
+        });
+      } else if (error.response?.status === 422) {
+        console.error('⚠️ Validation Error - Check form data');
+        setErrors({ 
+          general: error.response?.data?.message || 'Validation failed. Please check your input data.' 
+        });
+      } else if (error.response?.status === 500) {
+        console.error('💥 Server Error - Backend issue');
+        setErrors({ 
+          general: 'Server error. Please check the backend logs.' 
+        });
+      } else {
+        setErrors({ 
+          general: error.response?.data?.message || 'Failed to save profile data. Check console for details.' 
+        });
+      }
       return false;
     } finally {
       setSaving(false);
