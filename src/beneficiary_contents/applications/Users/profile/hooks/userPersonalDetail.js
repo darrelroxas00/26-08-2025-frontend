@@ -209,12 +209,16 @@ const usePersonalDetails = (userId = null) => {
     setLoading(true);
     try {
       // API call to get beneficiary details from Laravel backend
+      console.log('Loading personal details for user ID:', id);
       const response = await axiosInstance.get(`/api/beneficiary-details/${id}`);
       
-      if (response.data.success) {
+      if (response.data && response.data.success) {
         const transformedData = transformFromBackend(response.data.data);
         setFormData(transformedData);
         setIsExistingRecord(true);
+        console.log('Personal details loaded successfully');
+      } else {
+        console.log('No existing personal details found for user');
       }
     } catch (error) {
       console.error('Error loading personal details:', error);

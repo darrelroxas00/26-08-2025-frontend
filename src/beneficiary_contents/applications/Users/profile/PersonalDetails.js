@@ -403,15 +403,17 @@ const PersonalDetails = () => {
                     value={formData.birth_date ? new Date(formData.birth_date) : null}
                     onChange={(date) => updateField('birth_date', date?.toISOString().split('T')[0])}
                     disabled={!isEditing}
-                    renderInput={(params) => (
-                      <TextField
-                        {...params}
-                        fullWidth
-                        error={!!errors.birth_date}
-                        helperText={errors.birth_date}
-                        variant={isEditing ? "outlined" : "filled"}
-                      />
-                    )}
+                    slots={{
+                      textField: TextField
+                    }}
+                    slotProps={{
+                      textField: {
+                        fullWidth: true,
+                        error: !!errors.birth_date,
+                        helperText: errors.birth_date,
+                        variant: isEditing ? "outlined" : "filled"
+                      }
+                    }}
                   />
                 </Grid>
                 <Grid item xs={12} md={6}>

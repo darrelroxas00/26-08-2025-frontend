@@ -179,9 +179,16 @@ const RSBSAForm = () => {
     }
   };
 
-  // Handle form submission
+  // Handle form submission with enhanced error handling
   const handleSubmit = async () => {
     try {
+      // Use canSubmit for validation before submission
+      if (!canSubmit()) {
+        setShowError(true);
+        setErrorMessage('Please complete all required fields before submitting.');
+        return;
+      }
+
       const success = await submitForm();
       if (success) {
         setShowSuccess(true);
